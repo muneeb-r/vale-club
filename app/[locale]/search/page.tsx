@@ -96,21 +96,27 @@ export default async function SearchPage({
   return (
     <div className="min-h-screen bg-background">
       {/* Search header bar */}
-      <div className="border-b border-border bg-card px-4 py-4">
-        <div className="max-w-6xl mx-auto">
+      <div className="border-b border-border bg-card py-4">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 min-w-0">
               <h1 className="font-heading text-xl font-semibold text-foreground shrink-0">
                 {q ? (
                   <>
-                    {t("results_for")} <span className="text-primary">&ldquo;{q}&rdquo;</span>{" "}
-                    <span className="text-muted-foreground font-normal text-base">({total})</span>
+                    {t("results_for")}{" "}
+                    <span className="text-primary">&ldquo;{q}&rdquo;</span>{" "}
+                    <span className="text-muted-foreground font-normal text-base">
+                      ({total})
+                    </span>
                   </>
                 ) : (
                   <>
                     {t("directory_title")}{" "}
                     <span className="text-muted-foreground font-normal text-base">
-                      — {total} {total === 1 ? t("business_singular") : t("business_plural")}
+                      — {total}{" "}
+                      {total === 1
+                        ? t("business_singular")
+                        : t("business_plural")}
                     </span>
                   </>
                 )}

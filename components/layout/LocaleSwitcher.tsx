@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from "react";
 const LOCALES = [
   { code: "es", label: "Español", flag: "🇪🇸" },
   { code: "en", label: "English", flag: "🇺🇸" },
-  { code: "ca", label: "Català", flag: "🏴" },
+  { code: "ca", label: "Català", flag: "🇨🇴" },
 ] as const;
 
 export default function LocaleSwitcher() {
@@ -44,7 +44,9 @@ export default function LocaleSwitcher() {
         aria-expanded={open}
       >
         <span>{current.flag}</span>
-        <span className="font-medium uppercase tracking-wide text-xs">{current.code}</span>
+        <span className="font-medium uppercase tracking-wide text-xs">
+          {current.code}
+        </span>
         <svg
           className={`w-3 h-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           fill="none"
@@ -52,7 +54,11 @@ export default function LocaleSwitcher() {
           stroke="currentColor"
           strokeWidth={2.5}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 

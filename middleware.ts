@@ -26,7 +26,11 @@ export default async function middleware(req: NextRequest) {
   const token = req.cookies.get("vale_token")?.value;
   const user = token ? await verifyToken(token) : null;
 
-  const locale = pathname.startsWith("/en") ? "en" : pathname.startsWith("/ca") ? "ca" : "es";
+  const locale = pathname.startsWith("/en")
+    ? "en"
+    : pathname.startsWith("/ca")
+      ? "ca"
+      : "es";
   const localePath = locale === "es" ? "" : `/${locale}`;
 
   // Redirect logged-in users away from auth pages
@@ -35,8 +39,8 @@ export default async function middleware(req: NextRequest) {
       user.role === "admin"
         ? localePath + "/admin"
         : user.role === "business_owner"
-        ? localePath + "/dashboard"
-        : localePath + "/perfil";
+          ? localePath + "/dashboard"
+          : localePath + "/perfil";
     return NextResponse.redirect(new URL(dest, req.url));
   }
 
@@ -46,8 +50,8 @@ export default async function middleware(req: NextRequest) {
       return NextResponse.redirect(
         new URL(
           localePath + "/login?next=" + encodeURIComponent(pathname),
-          req.url
-        )
+          req.url,
+        ),
       );
     }
     if (user.role === "user") {
@@ -70,8 +74,8 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(
       new URL(
         localePath + "/login?next=" + encodeURIComponent(pathname),
-        req.url
-      )
+        req.url,
+      ),
     );
   }
 

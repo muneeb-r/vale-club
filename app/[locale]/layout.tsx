@@ -1,5 +1,15 @@
 import type { Metadata } from "next";
-import { Poppins, Inter_Tight } from "next/font/google";
+import {
+  Poppins,
+  Inter_Tight,
+  Roboto,
+  Inter,
+  Open_Sans,
+  Montserrat,
+  Lato,
+  Oswald,
+  Source_Sans_3,
+} from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -11,6 +21,7 @@ import { getServerUser } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import "../globals.css";
 import NextTopLoader from "nextjs-toploader";
+import Script from "next/script";
 
 const poppins = Poppins({
   variable: "--font-sans",
@@ -25,6 +36,15 @@ const interTight = Inter_Tight({
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
+
+// Fonts for byneural chatbot widget
+const roboto = Roboto({ variable: "--font-roboto", subsets: ["latin"], weight: ["400", "700"], display: "swap" });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
+const openSans = Open_Sans({ variable: "--font-open-sans", subsets: ["latin"], display: "swap" });
+const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin"], display: "swap" });
+const lato = Lato({ variable: "--font-lato", subsets: ["latin"], weight: ["400", "700"], display: "swap" });
+const oswald = Oswald({ variable: "--font-oswald", subsets: ["latin"], display: "swap" });
+const sourceSans = Source_Sans_3({ variable: "--font-source-sans", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -54,9 +74,15 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`${poppins.variable} ${interTight.variable}`}
+      className={`${poppins.variable} ${interTight.variable} ${roboto.variable} ${inter.variable} ${openSans.variable} ${montserrat.variable} ${lato.variable} ${oswald.variable} ${sourceSans.variable}`}
     >
       <body className="min-h-screen bg-background text-foreground font-sans antialiased">
+        <Script id="byneural-config" strategy="afterInteractive">{`
+          window.tenantId = 'vale_F9';
+          window.byNeuralContainerId = 'byneural-chatbot-root';
+        `}</Script>
+        <Script src="https://static.byneural.es/dist2/bundle.js" strategy="afterInteractive" />
+        <div id="byneural-chatbot-root" />
         <NextTopLoader
           shadow="none"
           color="var(--primary)"

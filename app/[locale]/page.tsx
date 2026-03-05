@@ -48,7 +48,16 @@ export default async function HomePage({ params }: HomePageProps) {
   const steps = [
     {
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-vale-teal">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-7 h-7 text-vale-teal"
+        >
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />
           <path d="M11 8a3 3 0 0 1 3 3" />
@@ -59,7 +68,16 @@ export default async function HomePage({ params }: HomePageProps) {
     },
     {
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-vale-teal">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-7 h-7 text-vale-teal"
+        >
           <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
           <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
           <path d="M9 12h6M9 16h4" />
@@ -70,7 +88,16 @@ export default async function HomePage({ params }: HomePageProps) {
     },
     {
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-vale-teal">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-7 h-7 text-vale-teal"
+        >
           <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.85a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z" />
         </svg>
       ),
@@ -155,7 +182,7 @@ export default async function HomePage({ params }: HomePageProps) {
             viewBox="0 0 1440 64"
             preserveAspectRatio="none"
             className="absolute inset-0 w-full h-full"
-            style={{ fill: "var(--color-vale-bg, #EDF8F9)" }}
+            style={{ fill: "#fff" }}
           >
             <path d="M0,32 C360,80 1080,-16 1440,32 L1440,64 L0,64 Z" />
           </svg>

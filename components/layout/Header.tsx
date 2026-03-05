@@ -12,7 +12,7 @@ export default async function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-white/80 backdrop-blur-md">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-4 h-20 flex items-center justify-between gap-6">
         {/* Logo */}
         <Link
           href="/"
