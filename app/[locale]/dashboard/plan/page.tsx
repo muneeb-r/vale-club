@@ -1,0 +1,309 @@
+import { getServerUser } from "@/lib/auth";
+import { connectDB } from "@/lib/db";
+import { Business } from "@/models/Business";
+import { Plan } from "@/models/Plan";
+import { SubscriptionRequest } from "@/models/SubscriptionRequest";
+import { Subscription } from "@/models/Subscription";
+import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { CheckCircle2, CreditCard, Zap, History } from "lucide-react";
+import SubscriptionRequestForm from "@/components/forms/SubscriptionRequestForm";
+
+interface PlanPageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: PlanPageProps) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "dashboard" });
+  return { title: t("plan_section") };
+}
+
+export default async function PlanPage({ params }: PlanPageProps) {
+  const { locale } = await params;
+  const user = await getServerUser();
+  if (!user) redirect("/login");
+
+  const t = await getTranslations("dashboard");
+
+  await connectDB();
+
+  const rawBusiness = await Business.findOne({ ownerId: user.userId })
+    .select("name plan planId featuredUntil status")
+    .lean();
+
+  if (!rawBusiness) redirect("/dashboard");
+
+  const [rawPlans, rawPendingRequest, rawHistory] = await Promise.all([
+    Plan.find({ isActive: true }).sort({ price: 1 }).lean(),
+    SubscriptionRequest.findOne({ businessId: rawBusiness._id })
+      .populate("planId", "name price")
+      .sort({ createdAt: -1 })
+      .lean(),
+    Subscription.find({ businessId: rawBusiness._id })
+      .populate("planId", "name")
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean(),
+  ]);
+
+  const business = JSON.parse(JSON.stringify(rawBusiness)) as {
+    _id: string;
+    name: string;
+    plan: "free" | "paid";
+    featuredUntil?: string;
+    status: string;
+  };
+
+  const plans = JSON.parse(JSON.stringify(rawPlans)) as {
+    _id: string;
+    name: { es: string; en: string } | string;
+    price: number;
+    features: { es: string; en: string }[];
+  }[];
+
+  const pendingRequest = rawPendingRequest
+    ? JSON.parse(JSON.stringify(rawPendingRequest))
+    : null;
+
+  const history = JSON.parse(JSON.stringify(rawHistory)) as {
+    _id: string;
+    planName: string;
+    planId: { name: { es: string; en: string } | string } | null;
+    price: number;
+    startDate: string;
+    endDate: string;
+    status: "active" | "expired" | "cancelled";
+  }[];
+
+  const now = new Date();
+  const featuredUntil = business.featuredUntil
+    ? new Date(business.featuredUntil)
+    : null;
+  const isPro = business.plan === "paid";
+  const isPlanExpired = isPro && featuredUntil !== null && featuredUntil < now;
+  const daysUntilExpiry = featuredUntil
+    ? Math.ceil((featuredUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+  const isExpiringSoon =
+    isPro && daysUntilExpiry !== null && daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
+
+  const freePlan = plans.find((p) => p.price === 0);
+  const paidPlans = plans.filter((p) => p.price > 0);
+
+  function planDisplayName(name: { es: string; en: string } | string): string {
+    if (typeof name === "string") return name;
+    return locale === "en" ? name.en || name.es : name.es || name.en;
+  }
+
+  // Cleans up planName strings accidentally stored as JSON-like objects
+  // e.g. "{ es: 'Básico', en: 'Basic' }" → locale-appropriate value
+  function cleanPlanName(name: string): string {
+    if (!name.includes("es:")) return name;
+    const key = locale === "en" ? "en" : "es";
+    const localeMatch = name.match(new RegExp(`${key}:\\s*['"]([^'"]+)['"]`));
+    if (localeMatch) return localeMatch[1];
+    const esFallback = name.match(/es:\s*['"]([^'"]+)['"]/);
+    return esFallback ? esFallback[1] : name;
+  }
+
+  const statusBadge = (status: string) => {
+    if (status === "active")
+      return (
+        <span className="text-xs bg-green-100 text-green-700 rounded-full px-2 py-0.5 font-medium">
+          {t("plan_status_active")}
+        </span>
+      );
+    if (status === "expired")
+      return (
+        <span className="text-xs bg-red-100 text-red-700 rounded-full px-2 py-0.5 font-medium">
+          {t("plan_status_expired")}
+        </span>
+      );
+    return (
+      <span className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5 font-medium">
+        {t("plan_status_cancelled")}
+      </span>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="font-heading text-2xl font-bold text-foreground">
+          {t("plan_section")}
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm">{business.name}</p>
+      </div>
+
+      {/* Current plan status */}
+      <div
+        className={`rounded-2xl p-5 border flex items-start gap-4 ${
+          isPlanExpired
+            ? "bg-red-50 border-red-200"
+            : isExpiringSoon
+            ? "bg-amber-50 border-amber-200"
+            : isPro
+            ? "bg-green-50 border-green-200"
+            : "bg-muted border-border"
+        }`}
+      >
+        <CreditCard
+          className={`w-6 h-6 mt-0.5 shrink-0 ${
+            isPlanExpired ? "text-red-600" : isExpiringSoon ? "text-amber-600" : isPro ? "text-green-600" : "text-muted-foreground"
+          }`}
+        />
+        <div className="space-y-1">
+          <p
+            className={`font-semibold text-sm ${
+              isPlanExpired ? "text-red-800" : isExpiringSoon ? "text-amber-800" : isPro ? "text-green-800" : "text-foreground"
+            }`}
+          >
+            {t("plan_section")}:{" "}
+            <span className="font-bold">
+              {isPro ? t("plan_pro") : t("plan_free")}
+            </span>
+          </p>
+          {isPro && featuredUntil && (
+            <p
+              className={`text-xs ${
+                isPlanExpired ? "text-red-700" : isExpiringSoon ? "text-amber-700" : "text-green-700"
+              }`}
+            >
+              {isPlanExpired
+                ? t("plan_expired_warning")
+                : isExpiringSoon
+                ? t("plan_renewal_warning")
+                : `${t("plan_expires")} ${featuredUntil.toLocaleDateString(locale)}`}
+            </p>
+          )}
+          {!isPro && (
+            <p className="text-xs text-muted-foreground">
+              {t("plan_upgrade_hint_free")}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Plans grid */}
+      <div
+        className={`grid grid-cols-1 gap-4 ${
+          plans.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2"
+        }`}
+      >
+        {/* Free plan card */}
+        <div
+          className={`bg-card rounded-2xl p-5 border space-y-4 ${
+            !isPro ? "border-primary ring-1 ring-primary/20" : "border-border"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading font-semibold text-foreground">
+              {freePlan ? planDisplayName(freePlan.name) : t("plan_free")}
+            </h2>
+            {!isPro && (
+              <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5 font-medium">
+                {t("plan_current_badge")}
+              </span>
+            )}
+          </div>
+          <p className="text-2xl font-bold text-foreground">{t("plan_free_label")}</p>
+          <ul className="space-y-2">
+            {(freePlan?.features ?? []).map((f, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                {locale === "en" ? f.en || f.es : f.es || f.en}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Paid plan cards */}
+        {paidPlans.map((plan) => (
+          <div
+            key={plan._id}
+            className={`bg-card rounded-2xl p-5 border space-y-4 ${
+              isPro && !isPlanExpired ? "border-primary ring-1 ring-primary/20" : "border-border"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="font-heading font-semibold text-foreground">
+                {planDisplayName(plan.name)}
+              </h2>
+              {isPro && !isPlanExpired && (
+                <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5 font-medium">
+                  {t("plan_current_badge")}
+                </span>
+              )}
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {plan.price} €
+              <span className="text-sm font-normal text-muted-foreground">/mes</span>
+            </p>
+            <ul className="space-y-2">
+              {plan.features.map((f, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground font-medium">
+                  <Zap className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  {locale === "en" ? f.en || f.es : f.es || f.en}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {/* Subscription request form — only for active businesses */}
+      {(!isPro || isPlanExpired) && (
+        business.status === "active" ? (
+          <SubscriptionRequestForm plans={plans} pendingRequest={pendingRequest} locale={locale} />
+        ) : (
+          <div className="bg-muted border border-border rounded-2xl p-5 text-sm text-muted-foreground">
+            {t("plan_requires_active")}
+          </div>
+        )
+      )}
+
+      {/* Subscription history */}
+      {history.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <History className="w-4 h-4 text-muted-foreground" />
+            <h2 className="font-heading font-semibold text-foreground text-sm">
+              {t("plan_history")}
+            </h2>
+          </div>
+          <div className="rounded-2xl border border-border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted text-muted-foreground">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium">{t("plan_col_plan")}</th>
+                  <th className="text-left px-4 py-2 font-medium hidden sm:table-cell">{t("plan_col_start")}</th>
+                  <th className="text-left px-4 py-2 font-medium hidden sm:table-cell">{t("plan_col_end")}</th>
+                  <th className="text-left px-4 py-2 font-medium">{t("plan_col_price")}</th>
+                  <th className="text-left px-4 py-2 font-medium">{t("plan_col_status")}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {history.map((sub) => (
+                  <tr key={sub._id} className="bg-card">
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      {sub.planId ? planDisplayName(sub.planId.name) : cleanPlanName(sub.planName)}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
+                      {new Date(sub.startDate).toLocaleDateString(locale)}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
+                      {new Date(sub.endDate).toLocaleDateString(locale)}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{sub.price} €</td>
+                    <td className="px-4 py-3">{statusBadge(sub.status)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

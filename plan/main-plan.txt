@@ -1,0 +1,298 @@
+VALE Web App (Fase 1) — Brief para Desarrollo
+1) Contexto y decisión
+Existe un MVP en WordPress (vale.club) que no se escalará: se mantiene solo como landing/captación de leads.
+
+
+Se construirá una web app a medida (código custom) como base escalable para:
+
+
+directorio de empresas
+
+
+perfiles profesionales
+
+
+filtros y búsqueda rápida (2–3 clics)
+
+
+sistema de reseñas bidireccional y validado
+
+
+futura conversión a app nativa
+
+
+Objetivo de entrega: plataforma lista entre el 10 y el 15 de marzo (aprox.) para onboarding de ~10 clientes confirmados.
+
+2) Alcance Fase 1 (MVP real escalable)
+2.1 Journey usuario (UX clave)
+Mobile-first. El usuario debe poder encontrar un servicio en 2–3 clics:
+Home: buscador + áreas/categorías principales
+
+
+Listado: resultados + filtros
+
+
+Perfil empresa: contacto y detalles
+
+
+Opcional (si se llega): vista mapa.
+Requisito UX explícito: no navegar “15 pantallas”. Prioridad máxima: simple, rápido, profesional.
+
+3) Funcionalidades Fase 1
+3.1 Directorio + búsqueda
+Home con:
+
+
+buscador (texto libre)
+
+
+grid de “áreas principales” (ej. Hogar, Salud, Belleza, Restauración, etc.)
+
+
+Listado de empresas con:
+
+
+filtros por:
+
+
+ubicación (si aplica)
+
+
+rating (puntuación)
+
+
+rango de precio (si aplica)
+
+
+ordenación (por defecto: relevancia / rating)
+
+
+paginación o infinite scroll
+
+
+Nota: categorías/subcategorías/campos se definirán (Martí/Pablo) y el dev lo implementa para cumplir “2–3 clics”.
+
+3.2 Perfil de empresa (escaparate)
+Página pública por empresa con:
+nombre + logo
+
+
+descripción
+
+
+Precios
+
+
+fotos (galería)
+
+
+ubicación (si se dispone)
+
+
+categoría/s
+
+
+botones de contacto dinámicos (solo aparecen si el negocio los rellenó):
+
+
+WhatsApp (prioritario)
+
+
+Email
+
+
+Web
+
+
+Instagram (opcional pero se menciona)
+
+
+Teléfono (si existe)
+
+
+
+3.3 Onboarding empresa + gestión básica
+Backoffice empresa (mínimo viable):
+editar perfil (campos básicos + medios)
+
+
+gestionar datos de contacto
+
+
+ver reseñas recibidas
+
+
+(si se implementa validación manual) confirmar servicio realizado
+
+Cualquier cambio de datos de contacto implica validación por email para confirmar
+
+
+
+3.4 Sistema de reseñas bidireccional (core feature) (Dont do we will do it in phase 2)
+Objetivo: proteger a empresas de malos clientes y dar confianza a usuarios.
+Flujos:
+Usuario → Empresa: deja reseña (rating + texto)
+
+
+Empresa → Usuario: puede dejar reseña al cliente (o al menos responder)
+
+
+Restricción importante: si el contacto ocurre por WhatsApp fuera de la plataforma, hay que validar que existió servicio antes de permitir reseña.
+Validación (MVP):
+Opción A: Empresa confirma “ok asistió” y habilita reseña
+
+
+Opción B: usuario sube “proof” (foto ticket/recibo/factura) para habilitar reseña
+
+
+Opción C (futuro / opcional): IA hace match de evidencia (OCR ticket / verificación imagen vs fotos del local)
+
+
+Para Fase 1, implementar A + B con revisión manual (admin) si hace falta; IA puede quedar como “placeholder”.
+
+3.5 Perfiles de cliente (decisión híbrida) (Dont do we will do it in phase 2)
+Fase 1 puede arrancar con:
+
+
+perfil invitado para reseñar (mínimo), o
+
+
+registro simple de usuario (recomendado si se hará bidireccional de verdad)
+
+
+A largo plazo, sí se quiere perfil cliente para:
+
+
+“cliente premium”
+
+
+tarjetas regalo
+
+
+fidelización
+
+
+% descuento
+
+
+Sugerencia técnica: construir ya entidad “User” (cliente) aunque el onboarding sea ligero.
+
+3.6 Admin panel (imprescindible)
+Panel admin para:
+CRUD de empresas
+
+
+aprobar/editar perfiles
+
+
+moderar reseñas (flags, eliminar, bloquear)
+
+
+gestionar categorías/etiquetas
+
+
+revisión de proofs subidos (si B)
+
+
+
+4) Monetización (Fase 1 mínima + preparación)
+En reunión se menciona:
+precio actual: 20 €/mes (por empresa)
+
+
+upsell futuro: “destacados” / subcategoría premium ~50 €/mes (ej. fontanero → hogar → “fontanería” destacado)
+
+
+Fase 1:
+se puede cobrar ya (TPV existe) aunque el WP no tenga registro completo
+
+
+el sistema de pago puede ser:
+
+
+simple: “empresa paga → admin activa”
+
+
+o integrado: suscripción mensual
+
+
+Requisito Guatemala (phase 2):
+se menciona que transferencias bancarias son comunes y tarjeta menos usada.
+
+
+para Fase 1: mantener TPV, pero dejar diseño modular para métodos alternativos.
+
+
+
+5) Migración desde WordPress
+WordPress permanece como captación de leads
+
+
+Requisito: exportar leads/usuarios y migrarlos a la nueva BD
+
+
+Los usuarios deberían poder iniciar sesión con “mismos datos” si se migran credenciales (ojo: normalmente no se puede si WP usa hashes distintos)
+
+
+Alternativa práctica: migrar email + forzar reset password en la nueva plataforma
+
+
+
+6) Entregables y metodología
+Wireframe funcional (pantallas + navegación + primeras funciones) para revisión rápida
+
+
+Luego aplicar diseño final sobre la base ya funcional
+
+
+
+7) Requisitos no funcionales
+Mobile-first real (pensado como app)
+
+
+Performance: rápido, simple
+
+
+Escalable: DB indexada, búsquedas eficientes
+
+
+Seguridad básica: auth segura, sanitización, rate limiting para reviews
+
+
+SEO base para indexar perfiles (si aplica)
+
+
+
+8) Lista de pantallas (mínimo)
+Públicas
+Home (buscador + categorías)
+
+
+Resultados (listado + filtros)
+
+
+Perfil empresa
+
+
+Autenticadas
+Login/registro (usuario y/o empresa)
+
+
+Panel empresa (editar perfil + ver reseñas)
+
+
+Panel admin (CRUD + moderación)
+
+
+
+9) Preguntas cerradas (para que el dev no bloquee)
+Tomar estas decisiones por defecto si no hay respuesta:
+
+
+Pagos Fase 1: pago manual + activación admin (rápido) y TPV integrado después
+
+
+Migración: importar emails y activar reset password (From Wp to this new coded website)
+
+
+

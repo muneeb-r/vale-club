@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ollama list:*)",
+      "Bash(ollama run:*)",
+      "Bash(npx tsx:*)",
+      "Bash(cat:*)",
+      "Bash(openssl rand:*)",
+      "Bash(python3:*)",
+      "Bash(\"/Users/mc/Desktop/vale.club/app/api/admin/settings/route.ts\":*)",
+      "Bash(\"/Users/mc/Desktop/vale.club/app/api/settings/route.ts\":*)",
+      "Bash(curl:*)",
+      "Bash(OLLAMA_MODEL=llama3.2:3b npx tsx:*)",
+      "WebFetch(domain:hugeiconspro.com)",
+      "Bash(grep:*)",
+      "WebFetch(domain:ui.shadcn.com)"
+    ],
+    "additionalDirectories": [
+      "/Users/mc/Desktop/vale.club/app/[locale]/admin",
+      "/Users/mc/Desktop/vale.club/app/api/admin/subscriptions",
+      "/Users/mc/Desktop/vale.club/app/[locale]",
+      "/Users/mc/Desktop/vale.club",
+      "/Users/mc/Desktop/vale.club/app/api/business-reviews",
+      "/Users/mc/Desktop/vale.club/app/[locale]/usuario",
+      "/Users/mc/Desktop/vale.club/app/api/admin/users"
+    ]
+  }
+}
