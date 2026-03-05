@@ -7,10 +7,30 @@ import { Suspense } from "react";
 import BusinessFiltersWrapper from "@/components/business/BusinessFiltersWrapper";
 import SurpriseButton from "@/components/business/SurpriseButton";
 import SearchModal from "@/components/business/SearchModal";
+import type { Metadata } from "next";
 
 interface SearchPageProps {
   params: Promise<{ locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export async function generateMetadata({ params, searchParams }: SearchPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const rawParams = await searchParams;
+  const t = await getTranslations({ locale, namespace: "search" });
+  const q = typeof rawParams.q === "string" ? rawParams.q : "";
+
+  const title = q ? t("meta_title_query", { q }) : t("meta_title_default");
+  const description = q ? t("meta_description_query", { q }) : t("meta_description_default");
+
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    alternates: {
+      canonical: locale === "es" ? "/search" : `/${locale}/search`,
+    },
+  };
 }
 
 const LIMIT = 12;

@@ -19,21 +19,48 @@ interface BusinessPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
+const BASE_URL = process.env.APP_URL || "https://vale.club";
+
 export async function generateMetadata({
   params,
 }: BusinessPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   await connectDB();
   const business = await Business.findOne({ slug, status: { $in: ["active", "inreview"] } }).lean();
   if (!business) return { title: "Empresa no encontrada" };
 
+  const description = business.description.slice(0, 160);
+  const ogImages = [
+    ...(business.logo ? [{ url: business.logo, alt: business.name }] : []),
+    ...(business.gallery ?? []).slice(0, 3).map((url: string) => ({ url, alt: business.name })),
+  ];
+
+  const canonicalPath = `/empresa/${slug}`;
+  const canonicalUrl = locale === "es" ? `${BASE_URL}${canonicalPath}` : `${BASE_URL}/${locale}${canonicalPath}`;
+
   return {
-    title: business.name,
-    description: business.description.slice(0, 160),
+    title: `${business.name} — VALE`,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        es: `${BASE_URL}${canonicalPath}`,
+        en: `${BASE_URL}/en${canonicalPath}`,
+        ca: `${BASE_URL}/ca${canonicalPath}`,
+      },
+    },
     openGraph: {
       title: business.name,
-      description: business.description.slice(0, 160),
-      images: business.logo ? [business.logo] : [],
+      description,
+      url: canonicalUrl,
+      type: "website",
+      images: ogImages.length > 0 ? ogImages : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: business.name,
+      description,
+      images: ogImages.length > 0 ? [ogImages[0].url] : undefined,
     },
   };
 }
@@ -94,8 +121,41 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
     !!business.featuredUntil &&
     new Date(business.featuredUntil) > featuredGrace;
 
+  const canonicalPath = `/empresa/${slug}`;
+  const pageUrl = locale === "es" ? `${BASE_URL}${canonicalPath}` : `${BASE_URL}/${locale}${canonicalPath}`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: business.name,
+    description: business.description,
+    url: pageUrl,
+    ...(business.logo && { image: business.logo }),
+    ...(business.reviewCount > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: business.rating.toFixed(1),
+        reviewCount: business.reviewCount,
+        bestRating: "5",
+        worstRating: "1",
+      },
+    }),
+    ...(business.location?.city && {
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: business.location.city,
+        ...(business.location.address && { streetAddress: business.location.address }),
+      },
+    }),
+    ...(categories.length > 0 && { knowsAbout: categories.map((c: { name: string }) => c.name) }),
+  };
+
   return (
     <main className="min-h-screen bg-background pb-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Back link */}
       <div className="max-w-4xl mx-auto px-4 pt-6">
         <BackButton label={tNav("directory")} href="/search" />

@@ -111,7 +111,11 @@
     "surprise_me": "Sorpréndeme",
     "search_placeholder": "Buscar negocios, servicios...",
     "search_action": "Buscar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "meta_title_default": "Directorio de negocios — VALE",
+    "meta_description_default": "Explora el directorio de negocios verificados en VALE. Encuentra restaurantes, servicios, tiendas y más en tu ciudad.",
+    "meta_title_query": "Resultados para \"{q}\" — VALE",
+    "meta_description_query": "Encuentra negocios relacionados con \"{q}\" en el directorio verificado de VALE."
   },
   "business": {
     "about": "Sobre nosotros",

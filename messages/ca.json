@@ -111,7 +111,11 @@
     "surprise_me": "Sorprèn-me",
     "search_placeholder": "Cercar negocis, serveis...",
     "search_action": "Cercar",
-    "cancel": "Cancel·lar"
+    "cancel": "Cancel·lar",
+    "meta_title_default": "Directori de negocis — VALE",
+    "meta_description_default": "Explora el directori de negocis verificats a VALE. Troba restaurants, serveis, botigues i més a la teva ciutat.",
+    "meta_title_query": "Resultats per a \"{q}\" — VALE",
+    "meta_description_query": "Troba negocis relacionats amb \"{q}\" al directori verificat de VALE."
   },
   "business": {
     "about": "Sobre nosaltres",

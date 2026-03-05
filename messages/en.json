@@ -111,7 +111,11 @@
     "surprise_me": "Surprise me",
     "search_placeholder": "Search businesses, services...",
     "search_action": "Search",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "meta_title_default": "Business Directory — VALE",
+    "meta_description_default": "Explore the verified business directory on VALE. Find restaurants, services, shops and more in your city.",
+    "meta_title_query": "Results for \"{q}\" — VALE",
+    "meta_description_query": "Find businesses related to \"{q}\" in the verified VALE directory."
   },
   "business": {
     "about": "About us",
