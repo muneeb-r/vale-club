@@ -87,6 +87,19 @@ export default async function PlanPage({ params }: PlanPageProps) {
     : null;
   const isExpiringSoon =
     isPro && daysUntilExpiry !== null && daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
+  // Expired but still within the 7-day grace period (cron hasn't downgraded yet)
+  const daysOverdue = featuredUntil
+    ? Math.ceil((now.getTime() - featuredUntil.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+  const isInGracePeriod = isPlanExpired && daysOverdue !== null && daysOverdue <= 7;
+
+  // Already downgraded to free but recently expired (within 7 days) — show grace warning
+  // Covers both "expired" subs (cron ran) and "active" subs with past endDate (cron pending)
+  const recentlyExpiredSub = !isPro
+    ? history.find((s) => (s.status === "expired" || s.status === "active") &&
+        new Date(s.endDate) < now &&
+        (now.getTime() - new Date(s.endDate).getTime()) <= 7 * 24 * 60 * 60 * 1000)
+    : null;
 
   const freePlan = plans.find((p) => p.price === 0);
   const paidPlans = plans.filter((p) => p.price > 0);
@@ -139,9 +152,9 @@ export default async function PlanPage({ params }: PlanPageProps) {
       {/* Current plan status */}
       <div
         className={`rounded-2xl p-5 border flex items-start gap-4 ${
-          isPlanExpired
+          isPlanExpired && !isInGracePeriod
             ? "bg-red-50 border-red-200"
-            : isExpiringSoon
+            : isPlanExpired || isExpiringSoon || recentlyExpiredSub
             ? "bg-amber-50 border-amber-200"
             : isPro
             ? "bg-green-50 border-green-200"
@@ -150,13 +163,13 @@ export default async function PlanPage({ params }: PlanPageProps) {
       >
         <CreditCard
           className={`w-6 h-6 mt-0.5 shrink-0 ${
-            isPlanExpired ? "text-red-600" : isExpiringSoon ? "text-amber-600" : isPro ? "text-green-600" : "text-muted-foreground"
+            isPlanExpired && !isInGracePeriod ? "text-red-600" : isPlanExpired || isExpiringSoon || recentlyExpiredSub ? "text-amber-600" : isPro ? "text-green-600" : "text-muted-foreground"
           }`}
         />
         <div className="space-y-1">
           <p
             className={`font-semibold text-sm ${
-              isPlanExpired ? "text-red-800" : isExpiringSoon ? "text-amber-800" : isPro ? "text-green-800" : "text-foreground"
+              isPlanExpired && !isInGracePeriod ? "text-red-800" : isPlanExpired || isExpiringSoon || recentlyExpiredSub ? "text-amber-800" : isPro ? "text-green-800" : "text-foreground"
             }`}
           >
             {t("plan_section")}:{" "}
@@ -167,17 +180,24 @@ export default async function PlanPage({ params }: PlanPageProps) {
           {isPro && featuredUntil && (
             <p
               className={`text-xs ${
-                isPlanExpired ? "text-red-700" : isExpiringSoon ? "text-amber-700" : "text-green-700"
+                isPlanExpired && !isInGracePeriod ? "text-red-700" : isPlanExpired || isExpiringSoon ? "text-amber-700" : "text-green-700"
               }`}
             >
-              {isPlanExpired
+              {isPlanExpired && !isInGracePeriod
                 ? t("plan_expired_warning")
+                : isInGracePeriod
+                ? t("plan_grace_warning")
                 : isExpiringSoon
                 ? t("plan_renewal_warning")
                 : `${t("plan_expires")} ${featuredUntil.toLocaleDateString(locale)}`}
             </p>
           )}
-          {!isPro && (
+          {!isPro && recentlyExpiredSub && (
+            <p className="text-xs text-amber-700">
+              {t("plan_grace_lost")}
+            </p>
+          )}
+          {!isPro && !recentlyExpiredSub && (
             <p className="text-xs text-muted-foreground">
               {t("plan_upgrade_hint_free")}
             </p>

@@ -87,6 +87,13 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
     loginMessage = tReviews("already_reviewed");
   }
 
+  const featuredGrace = new Date();
+  featuredGrace.setDate(featuredGrace.getDate() - 7);
+  const isFeaturedVisible =
+    business.plan === "paid" &&
+    !!business.featuredUntil &&
+    new Date(business.featuredUntil) > featuredGrace;
+
   return (
     <main className="min-h-screen bg-background pb-16">
       {/* Back link */}
@@ -119,9 +126,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
                   {business.name}
                 </h1>
                 <BadgeCheck className="w-6 h-6 text-primary shrink-0" />
-                {business.plan === "paid" &&
-                  business.featuredUntil &&
-                  new Date(business.featuredUntil) > new Date() && (
+                {isFeaturedVisible && (
                     <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 shrink-0">
                       <Zap className="w-3 h-3" />
                       {t("featured_badge")}

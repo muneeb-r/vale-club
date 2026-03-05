@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   await connectDB();
 
   const now = new Date();
-  const in7Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   const results = {
     warningsSent: 0,
@@ -50,81 +50,80 @@ export async function GET(req: NextRequest) {
     populate: { path: "ownerId", select: "email name" },
   });
 
-  for (const sub of expiringSoon) {
-    try {
-      const business = sub.businessId as unknown as {
-        name: string;
-        ownerId: { email: string; name: string };
-      };
+  await Promise.all(
+    expiringSoon.map(async (sub) => {
+      try {
+        const business = sub.businessId as unknown as {
+          name: string;
+          ownerId: { email: string; name: string };
+        };
 
-      if (!business?.ownerId?.email) continue;
+        if (!business?.ownerId?.email) return;
 
-      await sendRenewalWarningEmail({
-        to: business.ownerId.email,
-        businessName: business.name,
-        planName: sub.planName,
-        expiryDate: sub.endDate,
-        locale: "es", // default to Spanish; owner locale not stored yet
-      });
+        await sendRenewalWarningEmail({
+          to: business.ownerId.email,
+          businessName: business.name,
+          planName: sub.planName,
+          expiryDate: sub.endDate,
+          locale: "es",
+        });
 
-      sub.renewalWarningSentAt = now;
-      await sub.save();
-      results.warningsSent++;
-    } catch (err) {
-      results.errors.push(`Warning email failed for sub ${sub._id}: ${err}`);
-    }
-  }
+        sub.renewalWarningSentAt = now;
+        await sub.save();
+        results.warningsSent++;
+      } catch (err) {
+        results.errors.push(`Warning email failed for sub ${sub._id}: ${err}`);
+      }
+    })
+  );
 
   // ── 2. Expire overdue subscriptions ──────────────────────────────────────
   // Find active subscriptions whose end date has already passed.
+  const grace = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
   const overdue = await Subscription.find({
     status: "active",
-    endDate: { $lt: now },
+    endDate: { $lt: grace },
   }).populate({
     path: "businessId",
     select: "name ownerId plan",
     populate: { path: "ownerId", select: "email name" },
   });
 
-  for (const sub of overdue) {
-    try {
-      const business = sub.businessId as unknown as {
-        _id: string;
-        name: string;
-        plan: string;
-        ownerId: { email: string; name: string };
-      };
+  await Promise.all(
+    overdue.map(async (sub) => {
+      try {
+        const business = sub.businessId as unknown as {
+          _id: string;
+          name: string;
+          plan: string;
+          ownerId: { email: string; name: string };
+        };
 
-      // Mark subscription as expired
-      sub.status = "expired";
-      await sub.save();
+        sub.status = "expired";
+        await sub.save();
 
-      // Downgrade business to free plan
-      if (business?.plan === "paid") {
-        await Business.findByIdAndUpdate(business._id, {
-          $set: {
-            plan: "free",
-            planId: null,
-            featuredUntil: null,
-          },
-        });
+        if (business?.plan === "paid") {
+          await Business.findByIdAndUpdate(business._id, {
+            $set: { plan: "free", planId: null, featuredUntil: null },
+          });
+        }
+
+        if (business?.ownerId?.email) {
+          await sendPlanExpiredEmail({
+            to: business.ownerId.email,
+            businessName: business.name,
+            planName: sub.planName,
+            locale: "es",
+          });
+        }
+
+        results.expired++;
+      } catch (err) {
+        results.errors.push(`Expiry failed for sub ${sub._id}: ${err}`);
       }
-
-      // Notify owner
-      if (business?.ownerId?.email) {
-        await sendPlanExpiredEmail({
-          to: business.ownerId.email,
-          businessName: business.name,
-          planName: sub.planName,
-          locale: "es",
-        });
-      }
-
-      results.expired++;
-    } catch (err) {
-      results.errors.push(`Expiry failed for sub ${sub._id}: ${err}`);
-    }
-  }
+    })
+  );
 
   return NextResponse.json({
     ok: true,

@@ -31,10 +31,11 @@ export default function BusinessCard({ business, locale }: BusinessCardProps) {
       ? business.categories[0]?.nameEn
       : business.categories[0]?.name;
 
+  const grace = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const isFeatured =
     business.plan === "paid" &&
     !!business.featuredUntil &&
-    new Date(business.featuredUntil) > new Date();
+    new Date(business.featuredUntil) > grace;
 
   // Cover: first gallery image or null
   const coverImage = business.gallery?.[0] ?? null;

@@ -245,6 +245,8 @@
     "plan_upgrade_hint": "Contact us via WhatsApp or email to activate your Pro plan.",
     "plan_renewal_warning": "Your Pro plan expires soon. Contact us to renew.",
     "plan_expired_warning": "Your Pro plan has expired. Contact us to renew.",
+    "plan_grace_warning": "Your Pro plan has expired but Pro features are still active. Renew before they are disabled.",
+    "plan_grace_lost": "Your Pro plan expired recently. Pro features are no longer active — renew to get them back.",
     "edit_profile": "Edit profile",
     "plan_current_badge": "Current",
     "plan_upgrade_hint_free": "Upgrade to a paid plan to stand out in the directory.",

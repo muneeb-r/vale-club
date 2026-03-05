@@ -245,6 +245,8 @@
     "plan_upgrade_hint": "Contacta'ns per WhatsApp o email per activar el teu pla Pro.",
     "plan_renewal_warning": "El teu pla Pro expira aviat. Contacta'ns per renovar-lo.",
     "plan_expired_warning": "El teu pla Pro ha expirat. Contacta'ns per renovar-lo.",
+    "plan_grace_warning": "El teu pla Pro ha expirat però les funcions Pro encara estan actives. Renova abans que es desactivin.",
+    "plan_grace_lost": "El teu pla Pro va expirar recentment. Les funcions Pro ja no estan actives — renova per recuperar-les.",
     "edit_profile": "Editar perfil",
     "plan_current_badge": "Actual",
     "plan_upgrade_hint_free": "Actualitza a un pla de pagament per destacar el teu negoci al directori.",
