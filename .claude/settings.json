@@ -14,7 +14,8 @@
       "WebFetch(domain:hugeiconspro.com)",
       "Bash(grep:*)",
       "WebFetch(domain:ui.shadcn.com)",
-      "Bash(pnpm list flag-icons)"
+      "Bash(pnpm list flag-icons)",
+      "Bash(lsof -i :3000)"
     ],
     "additionalDirectories": [
       "/Users/mc/Desktop/vale.club/app/[locale]/admin",
