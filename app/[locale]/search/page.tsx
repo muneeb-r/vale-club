@@ -94,9 +94,11 @@ export default async function SearchPage({
         -1
       >);
 
-  let rawBusinesses: Awaited<ReturnType<typeof Business.find>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rawBusinesses: any[];
   let total: number;
-  let rawCategories: Awaited<ReturnType<typeof Category.find>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rawCategories: any[];
 
   try {
     [rawBusinesses, total, rawCategories] = await Promise.all([
