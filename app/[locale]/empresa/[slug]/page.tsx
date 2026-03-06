@@ -26,17 +26,25 @@ export async function generateMetadata({
 }: BusinessPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
   await connectDB();
-  const business = await Business.findOne({ slug, status: { $in: ["active", "inreview"] } }).lean();
+  const business = await Business.findOne({
+    slug,
+    status: { $in: ["active", "inreview"] },
+  }).lean();
   if (!business) return { title: "Empresa no encontrada" };
 
   const description = business.description.slice(0, 160);
   const ogImages = [
     ...(business.logo ? [{ url: business.logo, alt: business.name }] : []),
-    ...(business.gallery ?? []).slice(0, 3).map((url: string) => ({ url, alt: business.name })),
+    ...(business.gallery ?? [])
+      .slice(0, 3)
+      .map((url: string) => ({ url, alt: business.name })),
   ];
 
   const canonicalPath = `/empresa/${slug}`;
-  const canonicalUrl = locale === "es" ? `${BASE_URL}${canonicalPath}` : `${BASE_URL}/${locale}${canonicalPath}`;
+  const canonicalUrl =
+    locale === "es"
+      ? `${BASE_URL}${canonicalPath}`
+      : `${BASE_URL}/${locale}${canonicalPath}`;
 
   return {
     title: `${business.name} — VALE`,
@@ -65,7 +73,10 @@ export async function generateMetadata({
   };
 }
 
-export default async function BusinessProfilePage({ params, searchParams }: BusinessPageProps) {
+export default async function BusinessProfilePage({
+  params,
+  searchParams,
+}: BusinessPageProps) {
   const { locale, slug } = await params;
   const rawSearchParams = await searchParams;
   const reviewSearchParams: Record<string, string | undefined> = {};
@@ -122,7 +133,10 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
     new Date(business.featuredUntil) > featuredGrace;
 
   const canonicalPath = `/empresa/${slug}`;
-  const pageUrl = locale === "es" ? `${BASE_URL}${canonicalPath}` : `${BASE_URL}/${locale}${canonicalPath}`;
+  const pageUrl =
+    locale === "es"
+      ? `${BASE_URL}${canonicalPath}`
+      : `${BASE_URL}/${locale}${canonicalPath}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -136,7 +150,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
         "@type": "AggregateRating",
         ratingValue: business.rating.toFixed(1),
         reviewCount: business.reviewCount,
-        bestRating: "5",
+        bestRating: "4",
         worstRating: "1",
       },
     }),
@@ -144,10 +158,14 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
       address: {
         "@type": "PostalAddress",
         addressLocality: business.location.city,
-        ...(business.location.address && { streetAddress: business.location.address }),
+        ...(business.location.address && {
+          streetAddress: business.location.address,
+        }),
       },
     }),
-    ...(categories.length > 0 && { knowsAbout: categories.map((c: { name: string }) => c.name) }),
+    ...(categories.length > 0 && {
+      knowsAbout: categories.map((c: { name: string }) => c.name),
+    }),
   };
 
   return (
@@ -176,7 +194,11 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
               </div>
             ) : (
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-muted flex items-center justify-center shrink-0">
-                <CategoryIcon icon={categories[0]?.icon ?? ""} size="lg" className="text-foreground" />
+                <CategoryIcon
+                  icon={categories[0]?.icon ?? ""}
+                  size="lg"
+                  className="text-foreground"
+                />
               </div>
             )}
 
@@ -187,11 +209,11 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
                 </h1>
                 <BadgeCheck className="w-6 h-6 text-primary shrink-0" />
                 {isFeaturedVisible && (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 shrink-0">
-                      <Zap className="w-3 h-3" />
-                      {t("featured_badge")}
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 shrink-0">
+                    <Zap className="w-3 h-3" />
+                    {t("featured_badge")}
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-2 mt-2">
@@ -200,7 +222,11 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
                     key={cat.name}
                     className="text-xs bg-muted text-primary px-3 py-1 rounded-full inline-flex items-center gap-1.5"
                   >
-                    <CategoryIcon icon={cat.icon} size="sm" className="text-primary" />
+                    <CategoryIcon
+                      icon={cat.icon}
+                      size="sm"
+                      className="text-primary"
+                    />
                     {locale === "en" ? cat.nameEn : cat.name}
                   </span>
                 ))}
@@ -219,7 +245,8 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
                 {business.location?.city && (
                   <a
                     href={
-                      business.location.coordinates?.lat && business.location.coordinates?.lng
+                      business.location.coordinates?.lat &&
+                      business.location.coordinates?.lng
                         ? `https://www.google.com/maps?q=${business.location.coordinates.lat},${business.location.coordinates.lng}`
                         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location.city)}`
                     }
@@ -272,35 +299,42 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
             )}
 
             {/* Location */}
-            {(business.location?.address || business.location?.city) && (() => {
-              const loc = business.location;
-              const displayParts = [loc.address, loc.city, loc.country]
-                .filter(Boolean)
-                .filter((v, i, arr) => !arr.some((other, j) => j !== i && other?.includes(v!)));
-              const displayText = displayParts.join(", ");
-              const mapsUrl = loc.coordinates?.lat && loc.coordinates?.lng
-                ? `https://www.google.com/maps?q=${loc.coordinates.lat},${loc.coordinates.lng}`
-                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.address || loc.city || "")}`;
-              return (
-                <section>
-                  <h2 className="font-heading text-lg font-semibold text-foreground mb-3">
-                    {t("location")}
-                  </h2>
-                  {loc.placeName && (
-                    <p className="text-sm font-medium text-foreground mb-1">{loc.placeName}</p>
-                  )}
-                  <a
-                    href={mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-primary hover:underline text-sm"
-                  >
-                    <MapPin className="w-4 h-4 shrink-0" />
-                    {displayText}
-                  </a>
-                </section>
-              );
-            })()}
+            {(business.location?.address || business.location?.city) &&
+              (() => {
+                const loc = business.location;
+                const displayParts = [loc.address, loc.city, loc.country]
+                  .filter(Boolean)
+                  .filter(
+                    (v, i, arr) =>
+                      !arr.some((other, j) => j !== i && other?.includes(v!)),
+                  );
+                const displayText = displayParts.join(", ");
+                const mapsUrl =
+                  loc.coordinates?.lat && loc.coordinates?.lng
+                    ? `https://www.google.com/maps?q=${loc.coordinates.lat},${loc.coordinates.lng}`
+                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.address || loc.city || "")}`;
+                return (
+                  <section>
+                    <h2 className="font-heading text-lg font-semibold text-foreground mb-3">
+                      {t("location")}
+                    </h2>
+                    {loc.placeName && (
+                      <p className="text-sm font-medium text-foreground mb-1">
+                        {loc.placeName}
+                      </p>
+                    )}
+                    <a
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-primary hover:underline text-sm"
+                    >
+                      <MapPin className="w-4 h-4 shrink-0" />
+                      {displayText}
+                    </a>
+                  </section>
+                );
+              })()}
 
             {/* Gallery */}
             {business.gallery?.length > 0 && (
@@ -308,7 +342,10 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
                 <h2 className="font-heading text-lg font-semibold text-foreground mb-3">
                   {t("photos")}
                 </h2>
-                <Gallery images={business.gallery} businessName={business.name} />
+                <Gallery
+                  images={business.gallery}
+                  businessName={business.name}
+                />
               </section>
             )}
 
@@ -335,7 +372,6 @@ export default async function BusinessProfilePage({ params, searchParams }: Busi
               />
             </section>
           </div>
-
         </div>
       </div>
     </main>
