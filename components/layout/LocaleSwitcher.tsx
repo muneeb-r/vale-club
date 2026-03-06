@@ -4,10 +4,11 @@ import { usePathname, useRouter } from "@/lib/navigation";
 import { useParams } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
+// fi-es = Spain (with coat of arms), fi-gb = UK, fi-es-ct = Catalonia (Senyera)
 const LOCALES = [
-  { code: "es", label: "Español", flag: "🇪🇸" },
-  { code: "en", label: "English", flag: "🇺🇸" },
-  { code: "ca", label: "Català", flag: "🇨🇴" },
+  { code: "es", label: "Español", fi: "fi fi-es" },
+  { code: "en", label: "English", fi: "fi fi-gb" },
+  { code: "ca", label: "Català",  fi: "fi fi-es-ct" },
 ] as const;
 
 export default function LocaleSwitcher() {
@@ -43,7 +44,7 @@ export default function LocaleSwitcher() {
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span>{current.flag}</span>
+        <span className={`${current.fi} text-base`} aria-hidden />
         <span className="font-medium uppercase tracking-wide text-xs">
           {current.code}
         </span>
@@ -74,7 +75,7 @@ export default function LocaleSwitcher() {
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
-              <span>{l.flag}</span>
+              <span className={`${l.fi} text-base shrink-0`} aria-hidden />
               <span>{l.label}</span>
             </button>
           ))}

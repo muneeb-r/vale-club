@@ -20,6 +20,7 @@ import BottomNav from "@/components/layout/BottomNav";
 import { getServerUser } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import "../globals.css";
+import "flag-icons/css/flag-icons.min.css";
 import NextTopLoader from "nextjs-toploader";
 import Script from "next/script";
 
