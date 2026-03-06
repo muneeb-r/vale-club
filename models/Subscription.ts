@@ -1,4 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
+import "./Business";
+import "./Plan";
+import "./User";
+import "./SubscriptionRequest";
 
 export type SubscriptionStatus = "active" | "expired" | "cancelled";
 
@@ -47,7 +51,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
     approvedByAdminId: { type: Schema.Types.ObjectId, ref: "User" },
     renewalWarningSentAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Compound index for cron queries: find active subscriptions by end date
@@ -58,5 +62,5 @@ if (mongoose.models.Subscription) {
 }
 export const Subscription = mongoose.model<ISubscription>(
   "Subscription",
-  SubscriptionSchema
+  SubscriptionSchema,
 );

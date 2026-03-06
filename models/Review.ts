@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import "./User";
+import "./Business";
 
 export interface IReview extends Document {
   _id: mongoose.Types.ObjectId;

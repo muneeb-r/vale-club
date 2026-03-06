@@ -1,8 +1,14 @@
 import mongoose, { Schema, Document } from "mongoose";
 import "./Category";
 import "./Plan";
+import "./User";
 
-export type BusinessStatus = "pending" | "inreview" | "active" | "blocked" | "rejected";
+export type BusinessStatus =
+  | "pending"
+  | "inreview"
+  | "active"
+  | "blocked"
+  | "rejected";
 
 export interface IBusiness extends Document {
   _id: mongoose.Types.ObjectId;

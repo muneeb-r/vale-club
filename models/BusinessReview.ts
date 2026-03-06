@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
+import "./Business";
+import "./User";
 
 /**
  * BusinessReview — a review left BY a business ON a customer.
@@ -10,10 +12,10 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IBusinessReview extends Document {
   _id: mongoose.Types.ObjectId;
   businessId: mongoose.Types.ObjectId; // the business leaving the review
-  userId: mongoose.Types.ObjectId;     // the customer being reviewed
-  rating: number;                       // 1–5
-  text: string;                         // max 1000
-  isPublished: boolean;                 // always true on creation (no proof needed — business already verified via customer's proof)
+  userId: mongoose.Types.ObjectId; // the customer being reviewed
+  rating: number; // 1–5
+  text: string; // max 1000
+  isPublished: boolean; // always true on creation (no proof needed — business already verified via customer's proof)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,7 +38,7 @@ const BusinessReviewSchema = new Schema<IBusinessReview>(
     text: { type: String, required: true, maxlength: 1000 },
     isPublished: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // One review per business-user pair
