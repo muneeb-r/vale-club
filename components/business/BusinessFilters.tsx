@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import RadiusSlider from "@/components/business/RadiusSlider";
 import { CityFilterInput } from "@/components/forms/PlacesAutocomplete";
@@ -14,6 +14,7 @@ import {
   LocateFixed,
   Loader2,
   X,
+  Search,
 } from "lucide-react";
 import {
   Select,
@@ -29,6 +30,10 @@ import {
   DrawerTitle,
   DrawerClose,
 } from "@/components/ui/drawer";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 
 interface Category {
   _id: string;
@@ -51,8 +56,30 @@ export default function BusinessFilters({
   const searchParams = useSearchParams();
   const t = useTranslations("search");
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchOpen) {
+      setSearchValue(searchParams.get("q") ?? "");
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+  }, [searchOpen, searchParams]);
+
+  function submitSearch(q: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (q.trim()) {
+      params.set("q", q.trim());
+    } else {
+      params.delete("q");
+    }
+    params.delete("page");
+    setSearchOpen(false);
+    router.push(`${pathname}?${params.toString()}`);
+  }
 
   const radius = parseInt(searchParams.get("radius") || "0");
   const hasCoords = !!searchParams.get("lat") && !!searchParams.get("lng");
@@ -297,21 +324,80 @@ export default function BusinessFilters({
     <>
       {/* Mobile: drawer trigger button */}
       <div className="md:hidden">
-        <button
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-2 px-4 h-10 rounded-full border border-border bg-card text-sm font-medium shadow-sm w-full justify-between"
-        >
-          <span className="flex items-center gap-2">
+        <div className="flex items-center gap-2 px-4 h-10 rounded-full border border-border bg-card text-sm font-medium shadow-sm w-full">
+          {/* Search icon — opens search dialog */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            aria-label={t("search_placeholder")}
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
+          {/* Divider */}
+          <div className="w-px h-4 bg-border shrink-0" />
+
+          {/* Filters trigger — takes remaining space */}
+          <button
+            onClick={() => setOpen(true)}
+            className="flex items-center justify-between flex-1 min-w-0"
+          >
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+              {t("filters")}
+              {activeCount > 0 && (
+                <span className="bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center leading-none">
+                  {activeCount}
+                </span>
+              )}
+            </span>
             <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-            {t("filters")}
-            {activeCount > 0 && (
-              <span className="bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center leading-none">
-                {activeCount}
-              </span>
-            )}
-          </span>
-          <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-        </button>
+          </button>
+        </div>
+
+        {/* Search dialog */}
+        <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+          <DialogContent className="sm:max-w-md gap-0 p-4" showCloseButton={false}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submitSearch(searchValue);
+                  if (e.key === "Escape") setSearchOpen(false);
+                }}
+                placeholder={t("search_placeholder")}
+                className="w-full h-10 rounded-full border border-border bg-background pl-9 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+              />
+              {searchValue && (
+                <button
+                  onClick={() => setSearchValue("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 mt-3">
+              <button
+                onClick={() => setSearchOpen(false)}
+                className="px-4 py-1.5 rounded-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                onClick={() => submitSearch(searchValue)}
+                className="px-4 py-1.5 rounded-full text-sm bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+              >
+                {t("search_action")}
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Drawer open={open} onOpenChange={setOpen} direction="bottom">
           <DrawerContent className="max-h-[85vh] flex flex-col">

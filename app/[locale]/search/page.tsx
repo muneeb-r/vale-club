@@ -94,16 +94,43 @@ export default async function SearchPage({
         -1
       >);
 
-  const [rawBusinesses, total, rawCategories] = await Promise.all([
-    Business.find(filter, projection)
-      .sort(sortOptions)
-      .skip((page - 1) * LIMIT)
-      .limit(LIMIT)
-      .populate("categories", "name nameEn slug icon")
-      .lean(),
-    Business.countDocuments(filter),
-    Category.find({ isActive: true }).sort({ order: 1 }).lean(),
-  ]);
+  let rawBusinesses: Awaited<ReturnType<typeof Business.find>>;
+  let total: number;
+  let rawCategories: Awaited<ReturnType<typeof Category.find>>;
+
+  try {
+    [rawBusinesses, total, rawCategories] = await Promise.all([
+      Business.find(filter, projection)
+        .sort(sortOptions)
+        .skip((page - 1) * LIMIT)
+        .limit(LIMIT)
+        .populate("categories", "name nameEn slug icon")
+        .lean(),
+      Business.countDocuments(filter),
+      Category.find({ isActive: true }).sort({ order: 1 }).lean(),
+    ]);
+  } catch (err: unknown) {
+    // Text index not yet built — fall back to regex on name
+    const code = (err as { code?: number })?.code;
+    if (q && code === 27) {
+      delete filter.$text;
+      delete filter.score;
+      filter.name = { $regex: q, $options: "i" };
+      const fallbackSort = { plan: -1, rating: -1, reviewCount: -1, createdAt: -1 } as Record<string, -1>;
+      [rawBusinesses, total, rawCategories] = await Promise.all([
+        Business.find(filter)
+          .sort(fallbackSort)
+          .skip((page - 1) * LIMIT)
+          .limit(LIMIT)
+          .populate("categories", "name nameEn slug icon")
+          .lean(),
+        Business.countDocuments(filter),
+        Category.find({ isActive: true }).sort({ order: 1 }).lean(),
+      ]);
+    } else {
+      throw err;
+    }
+  }
 
   const businesses = JSON.parse(JSON.stringify(rawBusinesses));
   const categories = JSON.parse(JSON.stringify(rawCategories));
@@ -120,19 +147,19 @@ export default async function SearchPage({
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 min-w-0">
-              <h1 className="font-heading text-xl font-semibold text-foreground shrink-0">
+              <h1 className="font-heading text-base sm:text-xl font-semibold text-foreground shrink-0">
                 {q ? (
                   <>
                     {t("results_for")}{" "}
                     <span className="text-primary">&ldquo;{q}&rdquo;</span>{" "}
-                    <span className="text-muted-foreground font-normal text-base">
+                    <span className="text-muted-foreground font-normal text-sm sm:text-base">
                       ({total})
                     </span>
                   </>
                 ) : (
                   <>
                     {t("directory_title")}{" "}
-                    <span className="text-muted-foreground font-normal text-base">
+                    <span className="text-muted-foreground font-normal text-sm sm:text-base">
                       — {total}{" "}
                       {total === 1
                         ? t("business_singular")
@@ -141,9 +168,11 @@ export default async function SearchPage({
                   </>
                 )}
               </h1>
-              <Suspense fallback={<div className="w-8 h-8" />}>
-                <SearchModal />
-              </Suspense>
+              <div className="hidden sm:block">
+                <Suspense fallback={<div className="w-8 h-8" />}>
+                  <SearchModal />
+                </Suspense>
+              </div>
             </div>
             <SurpriseButton />
           </div>

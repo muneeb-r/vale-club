@@ -141,6 +141,13 @@
   }
 }
 
+/* Push byneural chatbot above the mobile bottom nav */
+@media (max-width: 639px) {
+  .css-1oe3lfx {
+    bottom: 65px !important;
+  }
+}
+
 /* ── Hero entrance animations ─────────────────────────────────────── */
 @keyframes fade-up {
   from {

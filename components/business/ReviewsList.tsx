@@ -54,7 +54,9 @@ export default async function ReviewsList({
   await connectDB();
 
   // Breakdown across ALL published reviews (for the bar chart — ignores star/page filter)
-  const allReviews = await Review.find({ businessId, isPublished: true }).select("rating").lean();
+  const allReviews = await Review.find({ businessId, isPublished: true })
+    .select("rating")
+    .lean();
   const breakdown: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
   for (const r of allReviews) {
     const s = Math.round(r.rating);
@@ -62,8 +64,12 @@ export default async function ReviewsList({
   }
 
   // Paginated filtered query
-  const filterQuery: Record<string, unknown> = { businessId, isPublished: true };
-  if (starFilter !== null) filterQuery.rating = { $gte: starFilter - 0.5, $lt: starFilter + 0.5 };
+  const filterQuery: Record<string, unknown> = {
+    businessId,
+    isPublished: true,
+  };
+  if (starFilter !== null)
+    filterQuery.rating = { $gte: starFilter - 0.5, $lt: starFilter + 0.5 };
 
   const [rawReviews, filteredTotal] = await Promise.all([
     Review.find(filterQuery)
@@ -91,9 +97,12 @@ export default async function ReviewsList({
       else params.set(k, v);
     }
     // Reset page when filter/sort changes
-    if (updates.star !== undefined || updates.sort !== undefined) params.delete("rpage");
+    if (updates.star !== undefined || updates.sort !== undefined)
+      params.delete("rpage");
     const qs = params.toString();
-    return (`/empresa/${slug}` + (qs ? `?${qs}` : "") + "#reviews") as `/empresa/${string}`;
+    return (`/empresa/${slug}` +
+      (qs ? `?${qs}` : "") +
+      "#reviews") as `/empresa/${string}`;
   }
 
   if (allReviews.length === 0) {
@@ -117,7 +126,10 @@ export default async function ReviewsList({
         <div className="flex-1 space-y-1.5">
           {[5, 4, 3, 2, 1].map((star) => {
             const count = breakdown[star] ?? 0;
-            const pct = businessReviewCount > 0 ? Math.round((count / businessReviewCount) * 100) : 0;
+            const pct =
+              businessReviewCount > 0
+                ? Math.round((count / businessReviewCount) * 100)
+                : 0;
             const isActive = starFilter === star;
             const href = buildUrl({ star: isActive ? null : String(star) });
             return (
@@ -128,7 +140,9 @@ export default async function ReviewsList({
                   isActive ? "bg-primary/8" : "hover:bg-muted/60"
                 }`}
               >
-                <span className={`text-xs font-medium w-3 shrink-0 text-right ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                <span
+                  className={`text-xs font-medium w-3 shrink-0 text-right ${isActive ? "text-primary" : "text-muted-foreground"}`}
+                >
                   {star}
                 </span>
                 <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 shrink-0" />
@@ -138,7 +152,9 @@ export default async function ReviewsList({
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <span className={`text-xs w-8 text-right shrink-0 tabular-nums ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                <span
+                  className={`text-xs w-8 text-right shrink-0 tabular-nums ${isActive ? "text-primary font-medium" : "text-muted-foreground"}`}
+                >
                   {count > 0 ? count : ""}
                 </span>
               </Link>
@@ -150,7 +166,7 @@ export default async function ReviewsList({
       {/* ── Filter chips + Sort dropdown ── */}
       <div className="flex items-center justify-between gap-2">
         {/* Star filter chips */}
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none min-w-0">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar min-w-0">
           <Link
             href={buildUrl({ star: null })}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
@@ -164,7 +180,9 @@ export default async function ReviewsList({
           {[5, 4, 3, 2, 1].map((star) => (
             <Link
               key={star}
-              href={buildUrl({ star: starFilter === star ? null : String(star) })}
+              href={buildUrl({
+                star: starFilter === star ? null : String(star),
+              })}
               className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                 starFilter === star
                   ? "bg-primary text-primary-foreground border-primary"
@@ -182,103 +200,139 @@ export default async function ReviewsList({
 
       {/* ── Review cards ── */}
       {reviews.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("no_filtered_reviews")}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("no_filtered_reviews")}
+        </p>
       ) : (
         <div className="space-y-4">
-          {reviews.map((review: {
-            _id: string;
-            rating: number;
-            text: string;
-            createdAt: string;
-            businessReply?: string;
-            userId: { _id: string; name: string; avatar?: string } | null;
-          }) => (
-            <ReviewCard
-              key={review._id}
-              review={review}
-              locale={locale}
-              isOwn={!!(currentUserId && review.userId?._id === currentUserId)}
-            />
-          ))}
+          {reviews.map(
+            (review: {
+              _id: string;
+              rating: number;
+              text: string;
+              createdAt: string;
+              businessReply?: string;
+              userId: { _id: string; name: string; avatar?: string } | null;
+            }) => (
+              <ReviewCard
+                key={review._id}
+                review={review}
+                locale={locale}
+                isOwn={
+                  !!(currentUserId && review.userId?._id === currentUserId)
+                }
+              />
+            ),
+          )}
         </div>
       )}
 
       {/* ── Pagination ── */}
-      {totalPages > 1 && (() => {
-        function buildPageRange(current: number, total: number): (number | "…")[] {
-          if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-          const pages: (number | "…")[] = [1];
-          if (current > 3) pages.push("…");
-          const start = Math.max(2, current - 1);
-          const end = Math.min(total - 1, current + 1);
-          for (let i = start; i <= end; i++) pages.push(i);
-          if (current < total - 2) pages.push("…");
-          pages.push(total);
-          return pages;
-        }
-        return (
-          <Pagination className="pt-2">
-            <PaginationContent>
-              {/* Previous */}
-              <PaginationItem>
-                {page > 1 ? (
-                  <Link
-                    href={buildUrl({ rpage: String(page - 1) })}
-                    aria-label="Go to previous page"
-                    className={cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pl-2.5")}
-                  >
-                    <ChevronLeftIcon className="size-4" />
-                    <span className="hidden sm:block">{tSearch("previous")}</span>
-                  </Link>
-                ) : (
-                  <span className={cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pl-2.5 pointer-events-none opacity-50")}>
-                    <ChevronLeftIcon className="size-4" />
-                    <span className="hidden sm:block">{tSearch("previous")}</span>
-                  </span>
-                )}
-              </PaginationItem>
-
-              {/* Numbered pages */}
-              {buildPageRange(page, totalPages).map((entry, i) =>
-                entry === "…" ? (
-                  <PaginationItem key={`ellipsis-${i}`}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={entry}>
+      {totalPages > 1 &&
+        (() => {
+          function buildPageRange(
+            current: number,
+            total: number,
+          ): (number | "…")[] {
+            if (total <= 7)
+              return Array.from({ length: total }, (_, i) => i + 1);
+            const pages: (number | "…")[] = [1];
+            if (current > 3) pages.push("…");
+            const start = Math.max(2, current - 1);
+            const end = Math.min(total - 1, current + 1);
+            for (let i = start; i <= end; i++) pages.push(i);
+            if (current < total - 2) pages.push("…");
+            pages.push(total);
+            return pages;
+          }
+          return (
+            <Pagination className="pt-2">
+              <PaginationContent>
+                {/* Previous */}
+                <PaginationItem>
+                  {page > 1 ? (
                     <Link
-                      href={buildUrl({ rpage: String(entry) })}
-                      aria-current={entry === page ? "page" : undefined}
-                      className={cn(buttonVariants({ variant: entry === page ? "outline" : "ghost", size: "icon" }))}
+                      href={buildUrl({ rpage: String(page - 1) })}
+                      aria-label="Go to previous page"
+                      className={cn(
+                        buttonVariants({ variant: "ghost", size: "default" }),
+                        "gap-1 px-2.5 sm:pl-2.5",
+                      )}
                     >
-                      {entry}
+                      <ChevronLeftIcon className="size-4" />
+                      <span className="hidden sm:block">
+                        {tSearch("previous")}
+                      </span>
                     </Link>
-                  </PaginationItem>
-                )
-              )}
+                  ) : (
+                    <span
+                      className={cn(
+                        buttonVariants({ variant: "ghost", size: "default" }),
+                        "gap-1 px-2.5 sm:pl-2.5 pointer-events-none opacity-50",
+                      )}
+                    >
+                      <ChevronLeftIcon className="size-4" />
+                      <span className="hidden sm:block">
+                        {tSearch("previous")}
+                      </span>
+                    </span>
+                  )}
+                </PaginationItem>
 
-              {/* Next */}
-              <PaginationItem>
-                {page < totalPages ? (
-                  <Link
-                    href={buildUrl({ rpage: String(page + 1) })}
-                    aria-label="Go to next page"
-                    className={cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pr-2.5")}
-                  >
-                    <span className="hidden sm:block">{tSearch("next")}</span>
-                    <ChevronRightIcon className="size-4" />
-                  </Link>
-                ) : (
-                  <span className={cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pr-2.5 pointer-events-none opacity-50")}>
-                    <span className="hidden sm:block">{tSearch("next")}</span>
-                    <ChevronRightIcon className="size-4" />
-                  </span>
+                {/* Numbered pages */}
+                {buildPageRange(page, totalPages).map((entry, i) =>
+                  entry === "…" ? (
+                    <PaginationItem key={`ellipsis-${i}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={entry}>
+                      <Link
+                        href={buildUrl({ rpage: String(entry) })}
+                        aria-current={entry === page ? "page" : undefined}
+                        className={cn(
+                          buttonVariants({
+                            variant: entry === page ? "outline" : "ghost",
+                            size: "icon",
+                          }),
+                        )}
+                      >
+                        {entry}
+                      </Link>
+                    </PaginationItem>
+                  ),
                 )}
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        );
-      })()}
+
+                {/* Next */}
+                <PaginationItem>
+                  {page < totalPages ? (
+                    <Link
+                      href={buildUrl({ rpage: String(page + 1) })}
+                      aria-label="Go to next page"
+                      className={cn(
+                        buttonVariants({ variant: "ghost", size: "default" }),
+                        "gap-1 px-2.5 sm:pr-2.5",
+                      )}
+                    >
+                      <span className="hidden sm:block">{tSearch("next")}</span>
+                      <ChevronRightIcon className="size-4" />
+                    </Link>
+                  ) : (
+                    <span
+                      className={cn(
+                        buttonVariants({ variant: "ghost", size: "default" }),
+                        "gap-1 px-2.5 sm:pr-2.5 pointer-events-none opacity-50",
+                      )}
+                    >
+                      <span className="hidden sm:block">{tSearch("next")}</span>
+                      <ChevronRightIcon className="size-4" />
+                    </span>
+                  )}
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          );
+        })()}
     </div>
   );
 }
