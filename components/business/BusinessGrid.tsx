@@ -1,13 +1,11 @@
 import { useTranslations } from "next-intl";
 import BusinessCard from "./BusinessCard";
-import { Link } from "@/lib/navigation";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
+  PaginationLink,
 } from "@/components/ui/pagination";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
@@ -86,24 +84,19 @@ export default function BusinessGrid({
           <PaginationContent>
             {/* Previous */}
             <PaginationItem>
-              {page > 1 ? (
-                <Link
-                  href={buildPageUrl(page - 1)}
-                  aria-label="Go to previous page"
-                  className={cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pl-2.5")}
-                >
-                  <ChevronLeftIcon className="size-4" />
-                  <span className="hidden sm:block">{t("previous")}</span>
-                </Link>
-              ) : (
-                <span className={cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pl-2.5 pointer-events-none opacity-50")}>
-                  <ChevronLeftIcon className="size-4" />
-                  <span className="hidden sm:block">{t("previous")}</span>
-                </span>
-              )}
+              <PaginationLink
+                size="default"
+                href={buildPageUrl(Math.max(1, page - 1))}
+                aria-label={t("previous")}
+                aria-disabled={page <= 1}
+                className={`gap-1 px-2.5 sm:pl-2.5${page <= 1 ? " pointer-events-none opacity-50" : ""}`}
+              >
+                <ChevronLeftIcon className="size-4" />
+                <span className="hidden sm:block">{t("previous")}</span>
+              </PaginationLink>
             </PaginationItem>
 
-            {/* Numbered pages */}
+            {/* Page numbers */}
             {buildPageRange(page, totalPages).map((entry, i) =>
               entry === "…" ? (
                 <PaginationItem key={`ellipsis-${i}`}>
@@ -111,34 +104,25 @@ export default function BusinessGrid({
                 </PaginationItem>
               ) : (
                 <PaginationItem key={entry}>
-                  <Link
-                    href={buildPageUrl(entry)}
-                    aria-current={entry === page ? "page" : undefined}
-                    className={cn(buttonVariants({ variant: entry === page ? "outline" : "ghost", size: "icon" }))}
-                  >
+                  <PaginationLink href={buildPageUrl(entry)} isActive={entry === page}>
                     {entry}
-                  </Link>
+                  </PaginationLink>
                 </PaginationItem>
               )
             )}
 
             {/* Next */}
             <PaginationItem>
-              {page < totalPages ? (
-                <Link
-                  href={buildPageUrl(page + 1)}
-                  aria-label="Go to next page"
-                  className={cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pr-2.5")}
-                >
-                  <span className="hidden sm:block">{t("next")}</span>
-                  <ChevronRightIcon className="size-4" />
-                </Link>
-              ) : (
-                <span className={cn(buttonVariants({ variant: "ghost", size: "default" }), "gap-1 px-2.5 sm:pr-2.5 pointer-events-none opacity-50")}>
-                  <span className="hidden sm:block">{t("next")}</span>
-                  <ChevronRightIcon className="size-4" />
-                </span>
-              )}
+              <PaginationLink
+                size="default"
+                href={buildPageUrl(Math.min(totalPages, page + 1))}
+                aria-label={t("next")}
+                aria-disabled={page >= totalPages}
+                className={`gap-1 px-2.5 sm:pr-2.5${page >= totalPages ? " pointer-events-none opacity-50" : ""}`}
+              >
+                <span className="hidden sm:block">{t("next")}</span>
+                <ChevronRightIcon className="size-4" />
+              </PaginationLink>
             </PaginationItem>
           </PaginationContent>
         </Pagination>
