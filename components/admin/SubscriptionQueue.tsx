@@ -11,12 +11,23 @@ import { Input } from "@/components/ui/input";
 interface SubRequest {
   _id: string;
   status: "pending" | "approved" | "rejected";
+  billingCycle?: "monthly" | "yearly";
   paymentNote: string;
   paymentProofUrl?: string;
   adminNote: string;
   createdAt: string;
   businessId: { _id: string; name: string; slug: string; plan: string } | null;
   planId: { _id: string; name: { es: string; en: string } | string; price: number; features: { es: string; en: string }[] } | null;
+}
+
+function autoFeaturedUntil(billingCycle?: "monthly" | "yearly"): string {
+  const d = new Date();
+  if (billingCycle === "yearly") {
+    d.setFullYear(d.getFullYear() + 1);
+  } else {
+    d.setMonth(d.getMonth() + 1);
+  }
+  return d.toISOString().slice(0, 10);
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -37,7 +48,15 @@ export default function SubscriptionQueue({ requests }: { requests: SubRequest[]
   const [loading, setLoading] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectNote, setRejectNote] = useState("");
-  const [featuredUntil, setFeaturedUntil] = useState<Record<string, string>>({});
+  const [featuredUntil, setFeaturedUntil] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    for (const req of requests) {
+      if (req.status === "pending") {
+        init[req._id] = autoFeaturedUntil(req.billingCycle);
+      }
+    }
+    return init;
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   async function approve(id: string) {
@@ -108,7 +127,12 @@ export default function SubscriptionQueue({ requests }: { requests: SubRequest[]
                 <span className="text-sm text-muted-foreground">
                   {req.planId
                     ? (typeof req.planId.name === "string" ? req.planId.name : req.planId.name.es || req.planId.name.en)
-                    : "—"} — {req.planId?.price ?? 0} €/mes
+                    : "—"}
+                  {req.billingCycle && (
+                    <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded-full bg-muted font-medium">
+                      {req.billingCycle === "yearly" ? t("billing_yearly") : t("billing_monthly")}
+                    </span>
+                  )}
                 </span>
               </div>
             </div>

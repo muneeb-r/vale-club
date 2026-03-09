@@ -17,6 +17,8 @@ export interface IBusiness extends Document {
   logo?: string;
   description: string;
   prices?: string;
+  pricesType?: "text" | "pdf" | "image";
+  pricesFileUrl?: string;
   gallery: string[];
   location: {
     placeName?: string; // establishment name from Google Maps
@@ -39,6 +41,7 @@ export interface IBusiness extends Document {
   contactWeb?: string;
   contactInstagram?: string;
   contactPhone?: string;
+  nrt?: string; // NRT (Andorran tax ID equivalent to VAT)
   rating: number;
   reviewCount: number;
   status: "pending" | "inreview" | "active" | "blocked" | "rejected";
@@ -57,6 +60,8 @@ const BusinessSchema = new Schema<IBusiness>(
     logo: { type: String },
     description: { type: String, default: "" },
     prices: { type: String },
+    pricesType: { type: String, enum: ["text", "pdf", "image"] },
+    pricesFileUrl: { type: String },
     gallery: [{ type: String }],
     location: {
       placeName: { type: String },
@@ -78,6 +83,7 @@ const BusinessSchema = new Schema<IBusiness>(
     contactWeb: { type: String },
     contactInstagram: { type: String },
     contactPhone: { type: String },
+    nrt: { type: String },
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },
     status: {

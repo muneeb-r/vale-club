@@ -13,10 +13,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  const { planId, paymentNote, paymentProofUrl } = await req.json();
+  const { planId, billingCycle, paymentNote, paymentProofUrl } = await req.json();
 
   if (!planId) {
     return NextResponse.json({ error: "Plan requerido" }, { status: 400 });
+  }
+  if (!["monthly", "yearly"].includes(billingCycle)) {
+    return NextResponse.json({ error: "Ciclo de facturación inválido" }, { status: 400 });
   }
 
   await connectDB();
@@ -36,6 +39,7 @@ export async function POST(req: NextRequest) {
   const request = await SubscriptionRequest.create({
     businessId: business._id,
     planId,
+    billingCycle: billingCycle as "monthly" | "yearly",
     paymentNote: paymentNote?.trim() || "",
     paymentProofUrl: paymentProofUrl?.trim() || "",
     status: "pending",

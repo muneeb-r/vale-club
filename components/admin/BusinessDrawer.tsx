@@ -68,6 +68,7 @@ interface BusinessDetail {
   contactEmail?: string;
   contactWeb?: string;
   contactInstagram?: string;
+  nrt?: string;
   rating: number;
   reviewCount: number;
   createdAt: string;
@@ -602,6 +603,13 @@ export default function BusinessDrawer({
                           .join(", ")}
                     </span>
                   </div>
+                </Section>
+              )}
+
+              {/* NRT */}
+              {business.nrt && (
+                <Section label="NRT">
+                  <p className="text-sm text-foreground font-mono">{business.nrt}</p>
                 </Section>
               )}
 

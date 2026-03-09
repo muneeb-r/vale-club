@@ -20,6 +20,7 @@ export default function RegisterForm() {
     email: "",
     password: "",
     businessName: "",
+    nrt: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -144,17 +145,34 @@ export default function RegisterForm() {
         />
       </div>
       {accountType === "business_owner" && (
-        <div className="space-y-2">
-          <Label htmlFor="businessName">{t("business_name_optional")}</Label>
-          <Input
-            id="businessName"
-            type="text"
-            value={formData.businessName}
-            onChange={(e) => update("businessName", e.target.value)}
-            placeholder="Mi Negocio S.A."
-            className="rounded-xl"
-          />
-        </div>
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="businessName">{t("business_name_optional")}</Label>
+            <Input
+              id="businessName"
+              type="text"
+              value={formData.businessName}
+              onChange={(e) => update("businessName", e.target.value)}
+              placeholder="Mi Negocio S.A."
+              className="rounded-xl"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="nrt">
+              NRT <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="nrt"
+              type="text"
+              value={formData.nrt}
+              onChange={(e) => update("nrt", e.target.value)}
+              placeholder="U-123456-X"
+              required
+              className="rounded-xl"
+            />
+            <p className="text-xs text-muted-foreground">{t("nrt_hint")}</p>
+          </div>
+        </>
       )}
       {error && (
         <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">

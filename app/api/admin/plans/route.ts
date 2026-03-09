@@ -26,16 +26,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  const { name, price, features, isActive } = await req.json();
+  const { name, price, priceMonthly, priceYearly, features, isActive } = await req.json();
 
-  if ((!name?.es && !name?.en) || price === undefined) {
-    return NextResponse.json({ error: "Nombre y precio requeridos" }, { status: 400 });
+  if (!name?.es && !name?.en) {
+    return NextResponse.json({ error: "Nombre requerido" }, { status: 400 });
   }
 
   await connectDB();
   const plan = await Plan.create({
     name: { es: (name.es ?? "").trim(), en: (name.en ?? "").trim() },
-    price: Number(price),
+    price: Number(price ?? priceMonthly ?? 0),
+    priceMonthly: Number(priceMonthly ?? price ?? 0),
+    priceYearly: Number(priceYearly ?? 0),
     features: Array.isArray(features)
       ? features.filter((f: { es?: string; en?: string }) => f?.es || f?.en)
       : [],

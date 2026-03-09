@@ -29,6 +29,8 @@ interface Plan {
   _id: string;
   name: PlanName | string;
   price: number;
+  priceMonthly?: number;
+  priceYearly?: number;
   features: PlanFeature[];
 }
 
@@ -36,7 +38,8 @@ interface PendingRequest {
   _id: string;
   status: "pending" | "approved" | "rejected";
   adminNote?: string;
-  planId: { name: PlanName | string; price: number } | null;
+  billingCycle?: "monthly" | "yearly";
+  planId: { name: PlanName | string; price: number; priceMonthly?: number; priceYearly?: number } | null;
   createdAt: string;
 }
 
@@ -59,6 +62,14 @@ interface Props {
 function planDisplayName(name: PlanName | string, locale: string): string {
   if (typeof name === "string") return name;
   return locale === "en" ? name.en || name.es : name.es || name.en;
+}
+
+function getMonthlyPrice(plan: { price: number; priceMonthly?: number }): number {
+  return plan.priceMonthly ?? plan.price ?? 0;
+}
+
+function getYearlyPrice(plan: { price: number; priceMonthly?: number; priceYearly?: number }): number {
+  return plan.priceYearly ?? (getMonthlyPrice(plan) * 12);
 }
 
 function CopyField({ label, value }: { label: string; value: string }) {
@@ -156,10 +167,11 @@ export default function SubscriptionRequestForm({
   const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const paidPlans = plans.filter((p) => p.price > 0);
+  const paidPlans = plans.filter((p) => (p.priceMonthly ?? p.price) > 0);
   const [selectedPlanId, setSelectedPlanId] = useState<string>(
     paidPlans[0]?._id ?? "",
   );
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [paymentNote, setPaymentNote] = useState("");
   const [paymentProofUrl, setPaymentProofUrl] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -190,6 +202,7 @@ export default function SubscriptionRequestForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planId: selectedPlanId,
+          billingCycle,
           paymentNote,
           paymentProofUrl,
         }),
@@ -205,6 +218,10 @@ export default function SubscriptionRequestForm({
   }
 
   if (pendingRequest?.status === "pending") {
+    const cycle = pendingRequest.billingCycle ?? "monthly";
+    const pendingPrice = cycle === "yearly"
+      ? getYearlyPrice(pendingRequest.planId ?? { price: 0 })
+      : getMonthlyPrice(pendingRequest.planId ?? { price: 0 });
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 space-y-2">
         <div className="flex items-center gap-2">
@@ -218,8 +235,9 @@ export default function SubscriptionRequestForm({
             plan: pendingRequest.planId
               ? planDisplayName(pendingRequest.planId.name, locale)
               : "—",
-            price: pendingRequest.planId?.price ?? 0,
+            price: pendingPrice,
           })}
+          {" "}({cycle === "yearly" ? t("billing_yearly") : t("billing_monthly")})
         </p>
         <p className="text-xs text-amber-600">{t("request_pending_hint")}</p>
       </div>
@@ -245,6 +263,8 @@ export default function SubscriptionRequestForm({
           paidPlans={paidPlans}
           selectedPlanId={selectedPlanId}
           setSelectedPlanId={setSelectedPlanId}
+          billingCycle={billingCycle}
+          setBillingCycle={setBillingCycle}
           selectedPlan={selectedPlan}
           paymentNote={paymentNote}
           setPaymentNote={setPaymentNote}
@@ -280,6 +300,8 @@ export default function SubscriptionRequestForm({
       paidPlans={paidPlans}
       selectedPlanId={selectedPlanId}
       setSelectedPlanId={setSelectedPlanId}
+      billingCycle={billingCycle}
+      setBillingCycle={setBillingCycle}
       selectedPlan={selectedPlan}
       paymentNote={paymentNote}
       setPaymentNote={setPaymentNote}
@@ -299,6 +321,8 @@ function RequestForm({
   paidPlans,
   selectedPlanId,
   setSelectedPlanId,
+  billingCycle,
+  setBillingCycle,
   selectedPlan,
   paymentNote,
   setPaymentNote,
@@ -314,6 +338,8 @@ function RequestForm({
   paidPlans: Plan[];
   selectedPlanId: string;
   setSelectedPlanId: (id: string) => void;
+  billingCycle: "monthly" | "yearly";
+  setBillingCycle: (c: "monthly" | "yearly") => void;
   selectedPlan: Plan | undefined;
   paymentNote: string;
   setPaymentNote: (v: string) => void;
@@ -343,26 +369,80 @@ function RequestForm({
         </p>
       </div>
 
-      {/* Plan selector */}
+      {/* Plan selector — only if multiple paid plans */}
+      {paidPlans.length > 1 && (
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            {t("select_plan")}
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {paidPlans.map((plan) => (
+              <button
+                key={plan._id}
+                onClick={() => setSelectedPlanId(plan._id)}
+                className={`px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
+                  selectedPlanId === plan._id
+                    ? "bg-primary border-primary text-primary-foreground"
+                    : "border-border text-foreground hover:bg-muted"
+                }`}
+              >
+                {planDisplayName(plan.name, locale)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Billing cycle toggle */}
       <div className="space-y-2">
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {t("select_plan")}
+          {t("billing_cycle")}
         </label>
-        <div className="flex flex-wrap gap-2">
-          {paidPlans.map((plan) => (
-            <button
-              key={plan._id}
-              onClick={() => setSelectedPlanId(plan._id)}
-              className={`px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
-                selectedPlanId === plan._id
-                  ? "bg-primary border-primary text-primary-foreground"
-                  : "border-border text-foreground hover:bg-muted"
-              }`}
-            >
-              {planDisplayName(plan.name, locale)} — {plan.price} €/mes
-            </button>
-          ))}
+        <div className="flex rounded-xl border border-border overflow-hidden w-fit">
+          <button
+            onClick={() => setBillingCycle("monthly")}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              billingCycle === "monthly"
+                ? "bg-primary text-primary-foreground"
+                : "text-foreground hover:bg-muted"
+            }`}
+          >
+            {t("billing_monthly")}
+            {selectedPlan && (
+              <span className="ml-1.5 font-bold">{getMonthlyPrice(selectedPlan)} €</span>
+            )}
+          </button>
+          <button
+            onClick={() => setBillingCycle("yearly")}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors border-l border-border ${
+              billingCycle === "yearly"
+                ? "bg-primary text-primary-foreground"
+                : "text-foreground hover:bg-muted"
+            }`}
+          >
+            {t("billing_yearly")}
+            {selectedPlan && (
+              <span className="ml-1.5 font-bold">{getYearlyPrice(selectedPlan)} €</span>
+            )}
+          </button>
         </div>
+        {billingCycle === "yearly" && selectedPlan &&
+          getYearlyPrice(selectedPlan) < getMonthlyPrice(selectedPlan) * 12 && (
+          <p className="text-xs text-green-600 font-medium">
+            {t("billing_yearly_savings", {
+              amount: (getMonthlyPrice(selectedPlan) * 12 - getYearlyPrice(selectedPlan)).toFixed(0),
+            })}
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground">
+          {t("billing_total")}:{" "}
+          <span className="font-semibold text-foreground">
+            {billingCycle === "yearly"
+              ? selectedPlan ? getYearlyPrice(selectedPlan) : 0
+              : selectedPlan ? getMonthlyPrice(selectedPlan) : 0} €
+          </span>
+          {billingCycle === "monthly" ? ` ${t("billing_per_month")}` : ` ${t("billing_per_year")}`}
+        </p>
       </div>
 
       {/* Selected plan features */}

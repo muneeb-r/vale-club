@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
       password,
       name,
       businessName,
+      nrt,
       accountType = "business_owner",
     } = await req.json();
 
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
         slug,
         ownerId: user._id,
         status: "pending",
+        ...(nrt ? { nrt: nrt.trim() } : {}),
       });
     }
 

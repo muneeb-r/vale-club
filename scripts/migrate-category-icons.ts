@@ -20,16 +20,19 @@ const CategorySchema = new mongoose.Schema({ name: String, slug: String, icon: S
 const Category = mongoose.models.Category || mongoose.model("Category", CategorySchema);
 
 const SLUG_TO_ICON: Record<string, string> = {
-  hogar:        "mdi:home",
-  salud:        "mdi:heart-pulse",
-  belleza:      "mdi:spa",
-  restauracion: "mdi:food-fork-drink",
-  educacion:    "mdi:school",
-  tecnologia:   "mdi:laptop",
-  transporte:   "mdi:car",
-  mascotas:     "mdi:paw",
-  eventos:      "mdi:party-popper",
-  finanzas:     "mdi:cash",
+  hogar:                    "mdi:home",
+  salud:                    "mdi:heart-pulse",
+  belleza:                  "mdi:spa",
+  restauracion:             "mdi:food-fork-drink",
+  educacion:                "mdi:school",
+  tecnologia:               "mdi:laptop",
+  transporte:               "mdi:car",
+  mascotas:                 "mdi:paw",
+  eventos:                  "mdi:party-popper",
+  finanzas:                 "mdi:cash",
+  "arquitectos-inmobiliarias": "mdi:office-building",
+  "vale-shop":              "mdi:shopping",
+  hoteles:                  "mdi:bed",
 };
 
 async function migrate() {

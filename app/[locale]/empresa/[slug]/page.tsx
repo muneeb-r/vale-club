@@ -183,11 +183,11 @@ export default async function BusinessProfilePage({
       <div className="bg-card border-b border-border mt-4">
         <div className="max-w-4xl mx-auto px-4 py-6 md:py-8">
           <div className="flex items-start gap-3 md:gap-5">
-            {business.gallery?.[0] ? (
+            {business.logo ? (
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden shrink-0 shadow-md border border-border">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={business.gallery[0]}
+                  src={business.logo}
                   alt={business.name}
                   className="w-full h-full object-cover"
                 />
@@ -287,14 +287,35 @@ export default async function BusinessProfilePage({
             </section>
 
             {/* Prices */}
-            {business.prices && (
+            {(business.prices || business.pricesFileUrl) && (
               <section>
                 <h2 className="font-heading text-lg font-semibold text-foreground mb-3">
                   {t("prices")}
                 </h2>
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                  {business.prices}
-                </p>
+                {(!business.pricesType || business.pricesType === "text") && business.prices && (
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                    {business.prices}
+                  </p>
+                )}
+                {business.pricesType === "image" && business.pricesFileUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={business.pricesFileUrl}
+                    alt={t("prices")}
+                    className="max-w-full rounded-2xl border border-border"
+                  />
+                )}
+                {business.pricesType === "pdf" && business.pricesFileUrl && (
+                  <a
+                    href={business.pricesFileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm text-foreground hover:border-primary hover:text-primary transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Ver carta / precios (PDF)
+                  </a>
+                )}
               </section>
             )}
 

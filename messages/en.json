@@ -175,7 +175,8 @@
     "account_customer": "I'm a customer",
     "account_customer_desc": "I want to search and review businesses",
     "account_business": "I have a business",
-    "account_business_desc": "I want to list my business in the directory"
+    "account_business_desc": "I want to list my business in the directory",
+    "nrt_hint": "NRT (Andorran Tax Registration Number)"
   },
   "dashboard": {
     "title": "My business",
@@ -264,7 +265,12 @@
     "plan_col_end": "Expires",
     "plan_col_price": "Price",
     "plan_col_status": "Status",
-    "plan_free_label": "Free"
+    "plan_free_label": "Free",
+    "nrt_hint": "NRT (Andorran Tax Registration Number)",
+    "prices_type_text": "Text",
+    "prices_type_image": "Image",
+    "plan_per_month": "/mo",
+    "plan_per_year": "/yr"
   },
   "admin": {
     "title": "Admin panel",
@@ -394,6 +400,7 @@
     "create_plan": "Create plan",
     "plan_name": "Plan name",
     "plan_price_month": "Price/month (€)",
+    "plan_price_year": "Price/year (€)",
     "plan_features": "Features",
     "plan_active": "Plan active",
     "plan_inactive": "Inactive",
@@ -413,7 +420,9 @@
     "bank_extra_info_placeholder": "e.g. Use your business name as the transfer reference.",
     "save_bank_details": "Save payment details",
     "saved": "Saved",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "billing_monthly": "Monthly",
+    "billing_yearly": "Yearly"
   },
   "reviews": {
     "title": "Reviews",
@@ -502,7 +511,13 @@
     "bank_name": "Bank",
     "bank_holder": "Account holder",
     "bank_account": "Account number",
-    "bank_reference": "Reference"
+    "bank_reference": "Reference",
+    "billing_monthly": "Monthly",
+    "billing_yearly": "Yearly",
+    "billing_yearly_savings": "Save {amount} €/year",
+    "billing_total": "Total",
+    "billing_per_month": "/mo",
+    "billing_per_year": "/yr"
   },
   "userProfile": {
     "back": "Directory",

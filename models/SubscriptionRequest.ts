@@ -7,6 +7,7 @@ export interface ISubscriptionRequest extends Document {
   businessId: mongoose.Types.ObjectId;
   planId: mongoose.Types.ObjectId;
   status: "pending" | "approved" | "rejected";
+  billingCycle: "monthly" | "yearly";
   paymentNote: string; // business owner notes (payment method, reference, etc.)
   paymentProofUrl: string; // Firebase URL of uploaded transaction screenshot/receipt
   adminNote: string; // admin reason for rejection
@@ -23,6 +24,11 @@ const SubscriptionRequestSchema = new Schema<ISubscriptionRequest>(
       index: true,
     },
     planId: { type: Schema.Types.ObjectId, ref: "Plan", required: true },
+    billingCycle: {
+      type: String,
+      enum: ["monthly", "yearly"],
+      default: "monthly",
+    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],

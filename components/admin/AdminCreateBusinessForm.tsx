@@ -39,6 +39,7 @@ export default function AdminCreateBusinessForm({
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    nrt: "",
     ownerId: users[0]?._id || "",
     status: "active" as "inreview" | "active" | "blocked",
     plan: "free" as "free" | "paid",
@@ -90,6 +91,17 @@ export default function AdminCreateBusinessForm({
               {t("slug")}: {slugify(formData.name)}
             </p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>NRT <span className="text-destructive">*</span></Label>
+          <Input
+            value={formData.nrt}
+            onChange={(e) => update("nrt", e.target.value)}
+            required
+            placeholder="U-123456-X"
+            className="rounded-xl"
+          />
         </div>
 
         <div className="space-y-2">

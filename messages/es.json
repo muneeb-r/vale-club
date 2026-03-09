@@ -175,7 +175,8 @@
     "account_customer": "Soy cliente",
     "account_customer_desc": "Quiero buscar y reseñar negocios",
     "account_business": "Tengo un negocio",
-    "account_business_desc": "Quiero publicar mi negocio en el directorio"
+    "account_business_desc": "Quiero publicar mi negocio en el directorio",
+    "nrt_hint": "NRT (Número de Registro Tributario de Andorra)"
   },
   "dashboard": {
     "title": "Mi negocio",
@@ -264,7 +265,12 @@
     "plan_col_end": "Vence",
     "plan_col_price": "Precio",
     "plan_col_status": "Estado",
-    "plan_free_label": "Gratis"
+    "plan_free_label": "Gratis",
+    "nrt_hint": "NRT (Número de Registro Tributario de Andorra)",
+    "prices_type_text": "Texto",
+    "prices_type_image": "Imagen",
+    "plan_per_month": "/mes",
+    "plan_per_year": "/año"
   },
   "admin": {
     "title": "Panel de administración",
@@ -394,6 +400,7 @@
     "create_plan": "Crear plan",
     "plan_name": "Nombre del plan",
     "plan_price_month": "Precio/mes (€)",
+    "plan_price_year": "Precio/año (€)",
     "plan_features": "Características",
     "plan_active": "Plan activo",
     "plan_inactive": "Inactivo",
@@ -413,7 +420,9 @@
     "bank_extra_info_placeholder": "Ej: Usa el nombre de tu negocio como referencia de la transferencia.",
     "save_bank_details": "Guardar datos de pago",
     "saved": "Guardado",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "billing_monthly": "Mensual",
+    "billing_yearly": "Anual"
   },
   "reviews": {
     "title": "Reseñas",
@@ -502,7 +511,13 @@
     "bank_name": "Banco",
     "bank_holder": "Titular",
     "bank_account": "Número de cuenta",
-    "bank_reference": "Referencia"
+    "bank_reference": "Referencia",
+    "billing_monthly": "Mensual",
+    "billing_yearly": "Anual",
+    "billing_yearly_savings": "Ahorras {amount} €/año",
+    "billing_total": "Total",
+    "billing_per_month": "/mes",
+    "billing_per_year": "/año"
   },
   "userProfile": {
     "back": "Directorio",

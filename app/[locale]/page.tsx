@@ -111,19 +111,18 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <main className="min-h-screen">
       {/* ─── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative bg-vale-teal overflow-hidden">
-        {/* grid pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,.8) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.8) 1px,transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-        {/* glow blobs — animate slowly */}
-        <div className="animate-blob absolute -top-32 -right-32 w-120 h-120 rounded-full bg-vale-accent/20 blur-3xl pointer-events-none" />
-        <div className="animate-blob-slow absolute -bottom-16 -left-16 w-80 h-80 rounded-full bg-vale-orange/15 blur-3xl pointer-events-none" />
+      <section className="relative overflow-hidden bg-black" style={{ minHeight: "560px" }}>
+        {/* Vimeo video background */}
+        <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+          <iframe
+            src="https://player.vimeo.com/video/1127800390?autoplay=1&loop=1&muted=1&background=1&controls=0&title=0&byline=0&portrait=0"
+            allow="autoplay; fullscreen"
+            className="absolute w-[177.78vh] min-w-full min-h-full h-[56.25vw] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{ border: "none" }}
+          />
+        </div>
+        {/* dark overlay */}
+        <div className="absolute inset-0 bg-black/50" />
 
         <div className="relative max-w-4xl mx-auto px-4 py-16 md:py-32 text-center space-y-6 md:space-y-8">
           <div
@@ -174,10 +173,7 @@ export default async function HomePage({ params }: HomePageProps) {
         </div>
 
         {/* wave separator */}
-        <div
-          className="animate-fade-in relative h-16 overflow-hidden"
-          style={{ animationDelay: "500ms" }}
-        >
+        <div className="relative h-16 overflow-hidden">
           <svg
             viewBox="0 0 1440 64"
             preserveAspectRatio="none"

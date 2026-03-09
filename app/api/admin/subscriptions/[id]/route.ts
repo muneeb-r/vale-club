@@ -33,7 +33,7 @@ export async function PUT(
 
   const request = await SubscriptionRequest.findById(id).populate(
     "planId",
-    "name price"
+    "name price priceMonthly priceYearly"
   );
 
   // Resolve plan name once — used for both the audit record and the email
@@ -68,7 +68,11 @@ export async function PUT(
         : (request.planId as { _id: mongoose.Types.ObjectId })?._id ??
           request.planId;
 
-    const planPrice = (request.planId as { price?: number })?.price ?? 0;
+    const billingCycle = (request.billingCycle as "monthly" | "yearly") ?? "monthly";
+    const planPriceMonthly = (request.planId as { priceMonthly?: number; price?: number })?.priceMonthly
+      ?? (request.planId as { price?: number })?.price ?? 0;
+    const planPriceYearly = (request.planId as { priceYearly?: number })?.priceYearly ?? planPriceMonthly * 12;
+    const planPrice = billingCycle === "yearly" ? planPriceYearly : planPriceMonthly;
 
     // Cancel any previously active subscriptions for this business
     await Subscription.updateMany(
@@ -82,6 +86,7 @@ export async function PUT(
       planId: resolvedPlanId,
       planName,
       price: planPrice,
+      billingCycle,
       startDate,
       endDate,
       status: "active",

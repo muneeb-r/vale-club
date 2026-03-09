@@ -11,7 +11,15 @@ import { Pencil, Trash2, Plus, X, Check } from "lucide-react";
 
 interface PlanFeature { es: string; en: string; }
 interface PlanName { es: string; en: string; }
-interface Plan { _id: string; name: PlanName; price: number; features: PlanFeature[]; isActive: boolean; }
+interface Plan {
+  _id: string;
+  name: PlanName;
+  price: number;
+  priceMonthly: number;
+  priceYearly: number;
+  features: PlanFeature[];
+  isActive: boolean;
+}
 
 function displayName(name: PlanName | string): string {
   if (typeof name === "string") return name;
@@ -67,12 +75,12 @@ function NameEditor({ value, onChange }: { value: PlanName; onChange: (v: PlanNa
       <div className="space-y-1">
         <Label className="text-xs">Nombre (ES)</Label>
         <Input value={value.es} onChange={(e) => onChange({ ...value, es: e.target.value })}
-          placeholder="Básico" className="rounded-xl h-9" />
+          placeholder="Pro" className="rounded-xl h-9" />
       </div>
       <div className="space-y-1">
         <Label className="text-xs">Name (EN)</Label>
         <Input value={value.en} onChange={(e) => onChange({ ...value, en: e.target.value })}
-          placeholder="Basic" className="rounded-xl h-9" />
+          placeholder="Pro" className="rounded-xl h-9" />
       </div>
     </div>
   );
@@ -86,10 +94,12 @@ export default function PlanManager({ plans: initialPlans }: { plans: Plan[] }) 
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const [newName, setNewName] = useState<PlanName>({ es: "", en: "" });
-  const [newPrice, setNewPrice] = useState("");
+  const [newPriceMonthly, setNewPriceMonthly] = useState("");
+  const [newPriceYearly, setNewPriceYearly] = useState("");
   const [newFeatures, setNewFeatures] = useState<PlanFeature[]>([]);
   const [editName, setEditName] = useState<PlanName>({ es: "", en: "" });
-  const [editPrice, setEditPrice] = useState("");
+  const [editPriceMonthly, setEditPriceMonthly] = useState("");
+  const [editPriceYearly, setEditPriceYearly] = useState("");
   const [editFeatures, setEditFeatures] = useState<PlanFeature[]>([]);
   const [editActive, setEditActive] = useState(true);
 
@@ -99,18 +109,26 @@ export default function PlanManager({ plans: initialPlans }: { plans: Plan[] }) 
       ? { es: plan.name as unknown as string, en: "" }
       : { es: plan.name.es ?? "", en: plan.name.en ?? "" };
     setEditName(n);
-    setEditPrice(plan.price.toString());
+    setEditPriceMonthly((plan.priceMonthly ?? plan.price ?? 0).toString());
+    setEditPriceYearly((plan.priceYearly ?? 0).toString());
     setEditFeatures([...plan.features]);
     setEditActive(plan.isActive);
   }
 
   async function saveEdit(id: string) {
     setLoading(id);
+    const priceMonthly = parseFloat(editPriceMonthly) || 0;
+    const priceYearly = parseFloat(editPriceYearly) || 0;
     const res = await fetch(`/api/admin/plans/${id}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: editName, price: parseFloat(editPrice) || 0, features: editFeatures, isActive: editActive }),
+      body: JSON.stringify({ name: editName, price: priceMonthly, priceMonthly, priceYearly, features: editFeatures, isActive: editActive }),
     });
-    if (res.ok) { setPlans((prev) => prev.map((p) => (p._id === id ? { ...p, ...{ name: editName, price: parseFloat(editPrice)||0, features: editFeatures, isActive: editActive } } : p))); setEditingId(null); }
+    if (res.ok) {
+      setPlans((prev) => prev.map((p) => (p._id === id
+        ? { ...p, name: editName, price: priceMonthly, priceMonthly, priceYearly, features: editFeatures, isActive: editActive }
+        : p)));
+      setEditingId(null);
+    }
     setLoading(null);
   }
 
@@ -126,14 +144,16 @@ export default function PlanManager({ plans: initialPlans }: { plans: Plan[] }) 
   async function createPlan() {
     if (!newName.es.trim() && !newName.en.trim()) return;
     setLoading("new");
+    const priceMonthly = parseFloat(newPriceMonthly) || 0;
+    const priceYearly = parseFloat(newPriceYearly) || 0;
     const res = await fetch("/api/admin/plans", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName, price: parseFloat(newPrice) || 0, features: newFeatures }),
+      body: JSON.stringify({ name: newName, price: priceMonthly, priceMonthly, priceYearly, features: newFeatures }),
     });
     if (res.ok) {
       const created = await res.json();
       setPlans((prev) => [...prev, created]);
-      setNewName({ es: "", en: "" }); setNewPrice(""); setNewFeatures([]); setCreating(false);
+      setNewName({ es: "", en: "" }); setNewPriceMonthly(""); setNewPriceYearly(""); setNewFeatures([]); setCreating(false);
     }
     setLoading(null);
   }
@@ -150,9 +170,20 @@ export default function PlanManager({ plans: initialPlans }: { plans: Plan[] }) 
           <div key={plan._id} className="bg-card border border-primary rounded-2xl p-5 space-y-4">
             <div className="space-y-1"><Label className="text-xs">{t("plan_name")}</Label>
               <NameEditor value={editName} onChange={setEditName} /></div>
-            <div className="space-y-1"><Label className="text-xs">{t("plan_price_month")}</Label>
-              <Input type="number" min={0} step={0.01} value={editPrice}
-                onChange={(e) => setEditPrice(e.target.value)} className="rounded-xl h-9" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">{t("plan_price_month")} (€/mes)</Label>
+                <Input type="number" min={0} step={0.01} value={editPriceMonthly}
+                  onChange={(e) => setEditPriceMonthly(e.target.value)}
+                  placeholder="20" className="rounded-xl h-9" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">{t("plan_price_year")} (€/año)</Label>
+                <Input type="number" min={0} step={0.01} value={editPriceYearly}
+                  onChange={(e) => setEditPriceYearly(e.target.value)}
+                  placeholder="200" className="rounded-xl h-9" />
+              </div>
+            </div>
             <div className="space-y-1"><Label className="text-xs">{t("plan_features")}</Label>
               <FeatureEditor features={editFeatures} onChange={setEditFeatures} /></div>
             <div className="flex items-center gap-2">
@@ -184,10 +215,17 @@ export default function PlanManager({ plans: initialPlans }: { plans: Plan[] }) 
                   </h3>
                   {!plan.isActive && <Badge variant="secondary" className="border-0 text-xs">{t("plan_inactive")}</Badge>}
                 </div>
-                <p className="text-2xl font-bold text-primary mt-1">
-                  {plan.price === 0 ? "Gratis / Free" : `${plan.price} €`}
-                  {plan.price > 0 && <span className="text-sm font-normal text-muted-foreground">/mes</span>}
-                </p>
+                <div className="flex items-baseline gap-4 mt-1 flex-wrap">
+                  <p className="text-xl font-bold text-primary">
+                    {(plan.priceMonthly ?? plan.price) === 0 ? "Gratis / Free" : `${plan.priceMonthly ?? plan.price} €`}
+                    {(plan.priceMonthly ?? plan.price) > 0 && <span className="text-sm font-normal text-muted-foreground">/mes</span>}
+                  </p>
+                  {(plan.priceYearly ?? 0) > 0 && (
+                    <p className="text-lg font-semibold text-foreground/70">
+                      {plan.priceYearly} €<span className="text-sm font-normal text-muted-foreground">/año</span>
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" variant="ghost" onClick={() => startEdit(plan)} className="rounded-full h-8 w-8 p-0">
@@ -218,9 +256,18 @@ export default function PlanManager({ plans: initialPlans }: { plans: Plan[] }) 
           <p className="font-heading font-semibold text-sm text-foreground">{t("new_plan")}</p>
           <div className="space-y-1"><Label className="text-xs">{t("plan_name")}</Label>
             <NameEditor value={newName} onChange={setNewName} /></div>
-          <div className="space-y-1"><Label className="text-xs">{t("plan_price_month")}</Label>
-            <Input type="number" min={0} step={0.01} value={newPrice}
-              onChange={(e) => setNewPrice(e.target.value)} placeholder="20" className="rounded-xl h-9" /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">{t("plan_price_month")} (€/mes)</Label>
+              <Input type="number" min={0} step={0.01} value={newPriceMonthly}
+                onChange={(e) => setNewPriceMonthly(e.target.value)} placeholder="20" className="rounded-xl h-9" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">{t("plan_price_year")} (€/año)</Label>
+              <Input type="number" min={0} step={0.01} value={newPriceYearly}
+                onChange={(e) => setNewPriceYearly(e.target.value)} placeholder="200" className="rounded-xl h-9" />
+            </div>
+          </div>
           <div className="space-y-1"><Label className="text-xs">{t("plan_features")}</Label>
             <FeatureEditor features={newFeatures} onChange={setNewFeatures} /></div>
           <div className="flex gap-2">
@@ -230,7 +277,7 @@ export default function PlanManager({ plans: initialPlans }: { plans: Plan[] }) 
               {loading === "new" ? t("creating") : t("create_plan")}
             </Button>
             <Button size="sm" variant="ghost"
-              onClick={() => { setCreating(false); setNewName({ es: "", en: "" }); setNewPrice(""); setNewFeatures([]); }}
+              onClick={() => { setCreating(false); setNewName({ es: "", en: "" }); setNewPriceMonthly(""); setNewPriceYearly(""); setNewFeatures([]); }}
               className="rounded-full h-8 px-4">{t("cancel")}
             </Button>
           </div>

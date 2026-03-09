@@ -6,7 +6,7 @@ import { SubscriptionRequest } from "@/models/SubscriptionRequest";
 import { Subscription } from "@/models/Subscription";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { CheckCircle2, CreditCard, Zap, History } from "lucide-react";
+import { CreditCard, Zap, History } from "lucide-react";
 import SubscriptionRequestForm from "@/components/forms/SubscriptionRequestForm";
 
 interface PlanPageProps {
@@ -37,7 +37,7 @@ export default async function PlanPage({ params }: PlanPageProps) {
   const [rawPlans, rawPendingRequest, rawHistory] = await Promise.all([
     Plan.find({ isActive: true }).sort({ price: 1 }).lean(),
     SubscriptionRequest.findOne({ businessId: rawBusiness._id })
-      .populate("planId", "name price")
+      .populate("planId", "name price priceMonthly priceYearly")
       .sort({ createdAt: -1 })
       .lean(),
     Subscription.find({ businessId: rawBusiness._id })
@@ -59,6 +59,8 @@ export default async function PlanPage({ params }: PlanPageProps) {
     _id: string;
     name: { es: string; en: string } | string;
     price: number;
+    priceMonthly: number;
+    priceYearly: number;
     features: { es: string; en: string }[];
   }[];
 
@@ -101,8 +103,7 @@ export default async function PlanPage({ params }: PlanPageProps) {
         (now.getTime() - new Date(s.endDate).getTime()) <= 7 * 24 * 60 * 60 * 1000)
     : null;
 
-  const freePlan = plans.find((p) => p.price === 0);
-  const paidPlans = plans.filter((p) => p.price > 0);
+  const paidPlans = plans.filter((p) => (p.priceMonthly ?? p.price) > 0);
 
   function planDisplayName(name: { es: string; en: string } | string): string {
     if (typeof name === "string") return name;
@@ -206,39 +207,7 @@ export default async function PlanPage({ params }: PlanPageProps) {
       </div>
 
       {/* Plans grid */}
-      <div
-        className={`grid grid-cols-1 gap-4 ${
-          plans.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2"
-        }`}
-      >
-        {/* Free plan card */}
-        <div
-          className={`bg-card rounded-2xl p-5 border space-y-4 ${
-            !isPro ? "border-primary ring-1 ring-primary/20" : "border-border"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <h2 className="font-heading font-semibold text-foreground">
-              {freePlan ? planDisplayName(freePlan.name) : t("plan_free")}
-            </h2>
-            {!isPro && (
-              <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5 font-medium">
-                {t("plan_current_badge")}
-              </span>
-            )}
-          </div>
-          <p className="text-2xl font-bold text-foreground">{t("plan_free_label")}</p>
-          <ul className="space-y-2">
-            {(freePlan?.features ?? []).map((f, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                {locale === "en" ? f.en || f.es : f.es || f.en}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Paid plan cards */}
+      <div className={`grid grid-cols-1 gap-4 ${paidPlans.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : "max-w-sm"}`}>
         {paidPlans.map((plan) => (
           <div
             key={plan._id}
@@ -256,10 +225,20 @@ export default async function PlanPage({ params }: PlanPageProps) {
                 </span>
               )}
             </div>
-            <p className="text-2xl font-bold text-foreground">
-              {plan.price} €
-              <span className="text-sm font-normal text-muted-foreground">/mes</span>
-            </p>
+            {/* Monthly / Yearly prices */}
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-foreground">
+                {plan.priceMonthly ?? plan.price} €
+                <span className="text-sm font-normal text-muted-foreground">{t("plan_per_month")}</span>
+              </p>
+              {(plan.priceYearly ?? 0) > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  o{" "}
+                  <span className="font-semibold text-foreground">{plan.priceYearly} €</span>
+                  {t("plan_per_year")}
+                </p>
+              )}
+            </div>
             <ul className="space-y-2">
               {plan.features.map((f, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground font-medium">

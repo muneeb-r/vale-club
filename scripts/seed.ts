@@ -61,16 +61,19 @@ const User =
   mongoose.model("User", UserSchema);
 
 const CATEGORIES = [
-  { name: "Hogar", nameEn: "Home", slug: "hogar", icon: "🏠", order: 1 },
-  { name: "Salud", nameEn: "Health", slug: "salud", icon: "🏥", order: 2 },
-  { name: "Belleza", nameEn: "Beauty", slug: "belleza", icon: "💅", order: 3 },
-  { name: "Restauración", nameEn: "Food & Dining", slug: "restauracion", icon: "🍽️", order: 4 },
-  { name: "Educación", nameEn: "Education", slug: "educacion", icon: "📚", order: 5 },
-  { name: "Tecnología", nameEn: "Technology", slug: "tecnologia", icon: "💻", order: 6 },
-  { name: "Transporte", nameEn: "Transport", slug: "transporte", icon: "🚗", order: 7 },
-  { name: "Mascotas", nameEn: "Pets", slug: "mascotas", icon: "🐾", order: 8 },
-  { name: "Eventos", nameEn: "Events", slug: "eventos", icon: "🎉", order: 9 },
-  { name: "Finanzas", nameEn: "Finance", slug: "finanzas", icon: "💰", order: 10 },
+  { name: "Hogar", nameEn: "Home", slug: "hogar", icon: "mdi:home", order: 1 },
+  { name: "Salud", nameEn: "Health", slug: "salud", icon: "mdi:heart-pulse", order: 2 },
+  { name: "Belleza", nameEn: "Beauty", slug: "belleza", icon: "mdi:spa", order: 3 },
+  { name: "Restauración", nameEn: "Food & Dining", slug: "restauracion", icon: "mdi:food-fork-drink", order: 4 },
+  { name: "Educación", nameEn: "Education", slug: "educacion", icon: "mdi:school", order: 5 },
+  { name: "Tecnología", nameEn: "Technology", slug: "tecnologia", icon: "mdi:laptop", order: 6 },
+  { name: "Transporte", nameEn: "Transport", slug: "transporte", icon: "mdi:car", order: 7 },
+  { name: "Mascotas", nameEn: "Pets", slug: "mascotas", icon: "mdi:paw", order: 8 },
+  { name: "Eventos", nameEn: "Events", slug: "eventos", icon: "mdi:party-popper", order: 9 },
+  { name: "Finanzas", nameEn: "Finance", slug: "finanzas", icon: "mdi:cash", order: 10 },
+  { name: "Arquitectos e inmobiliarias", nameEn: "Architecture & Real Estate", slug: "arquitectos-inmobiliarias", icon: "mdi:office-building", order: 11 },
+  { name: "Vale Shop", nameEn: "Vale Shop", slug: "vale-shop", icon: "mdi:shopping", order: 12 },
+  { name: "Hoteles", nameEn: "Hotels", slug: "hoteles", icon: "mdi:bed", order: 13 },
 ];
 
 async function seed() {

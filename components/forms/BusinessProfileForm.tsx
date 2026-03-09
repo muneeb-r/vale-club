@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import ImageUpload from "./ImageUpload";
 import { AddressAutocomplete, CityAutocomplete, PlaceResult } from "./PlacesAutocomplete";
 import { toast } from "sonner";
-import { X, CheckCircle2, Circle, ChevronRight } from "lucide-react";
+import { X, CheckCircle2, Circle, ChevronRight, Upload, FileText, Image as ImageIcon } from "lucide-react";
 import CategoryIcon from "@/components/ui/CategoryIcon";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
@@ -26,8 +26,11 @@ interface Category {
 interface BusinessData {
   name: string;
   slug: string;
+  logo?: string;
   description: string;
   prices?: string;
+  pricesType?: "text" | "pdf" | "image";
+  pricesFileUrl?: string;
   gallery: string[];
   location: {
     placeName?: string;
@@ -42,6 +45,7 @@ interface BusinessData {
   contactWeb?: string;
   contactInstagram?: string;
   contactPhone?: string;
+  nrt?: string;
   status: "pending" | "inreview" | "active" | "blocked" | "rejected";
   categories: Category[];
 }
@@ -76,6 +80,78 @@ function getChecklist(data: BusinessData, t: (k: string) => string): CheckItem[]
     { key: "contact", label: t("checklist_contact"), tab: "contact", done: hasContact },
     { key: "gallery", label: t("checklist_gallery"), tab: "media", done: data.gallery.length >= 1 },
   ];
+}
+
+// ── PricesFileUpload ─────────────────────────────────────────────────────────
+
+function PricesFileUpload({
+  slug,
+  type,
+  currentUrl,
+  onUploaded,
+}: {
+  slug: string;
+  type: "pdf" | "image";
+  currentUrl?: string;
+  onUploaded: (url: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  async function handleFile(file: File) {
+    const allowedImage = ["image/jpeg", "image/png", "image/webp"];
+    const allowedPdf = ["application/pdf"];
+    const allowed = type === "pdf" ? allowedPdf : allowedImage;
+    if (!allowed.includes(file.type)) return;
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const path = `businesses/${slug}/prices-${Date.now()}.${ext}`;
+    const storageRef = ref(storage, path);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+    uploadTask.on(
+      "state_changed",
+      (snap) => setProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
+      (err) => { console.error(err); setUploading(false); },
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        onUploaded(url);
+        setUploading(false);
+        setProgress(0);
+      }
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {currentUrl && (
+        type === "pdf" ? (
+          <a href={currentUrl} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+            <FileText className="w-4 h-4" /> Ver PDF actual
+          </a>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={currentUrl} alt="Precios" className="max-h-48 rounded-xl border border-border object-contain" />
+        )
+      )}
+      <label className="cursor-pointer">
+        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-colors ${
+          uploading ? "bg-muted text-muted-foreground" : "border-border hover:border-primary text-muted-foreground hover:text-foreground"
+        }`}>
+          {type === "pdf" ? <FileText className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
+          <Upload className="w-4 h-4" />
+          {uploading ? `${progress}%` : currentUrl ? "Cambiar archivo" : `Subir ${type === "pdf" ? "PDF" : "imagen"}`}
+        </div>
+        <input
+          type="file"
+          accept={type === "pdf" ? "application/pdf" : "image/jpeg,image/png,image/webp"}
+          className="hidden"
+          disabled={uploading}
+          onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+        />
+      </label>
+    </div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -350,14 +426,52 @@ export default function BusinessProfileForm({
               </p>
             </div>
             <div className="space-y-2">
-              <Label>{t("prices")}</Label>
-              <Textarea
-                value={formData.prices || ""}
-                onChange={(e) => update("prices", e.target.value)}
-                rows={3}
-                placeholder={t("prices_placeholder")}
+              <Label>NRT <span className="text-destructive">*</span></Label>
+              <Input
+                value={formData.nrt || ""}
+                onChange={(e) => update("nrt", e.target.value)}
+                placeholder="U-123456-X"
                 className="rounded-xl"
               />
+              <p className="text-xs text-muted-foreground">{t("nrt_hint")}</p>
+            </div>
+
+            {/* Prices — type selector */}
+            <div className="space-y-2">
+              <Label>{t("prices")}</Label>
+              <div className="flex gap-2">
+                {(["text", "pdf", "image"] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => update("pricesType", type)}
+                    className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
+                      (formData.pricesType ?? "text") === type
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-muted text-muted-foreground border-border hover:border-primary"
+                    }`}
+                  >
+                    {type === "text" ? t("prices_type_text") : type === "pdf" ? "PDF" : t("prices_type_image")}
+                  </button>
+                ))}
+              </div>
+              {(formData.pricesType ?? "text") === "text" && (
+                <Textarea
+                  value={formData.prices || ""}
+                  onChange={(e) => update("prices", e.target.value)}
+                  rows={3}
+                  placeholder={t("prices_placeholder")}
+                  className="rounded-xl"
+                />
+              )}
+              {((formData.pricesType === "pdf") || (formData.pricesType === "image")) && (
+                <PricesFileUpload
+                  slug={business.slug}
+                  type={formData.pricesType}
+                  currentUrl={formData.pricesFileUrl}
+                  onUploaded={(url) => update("pricesFileUrl", url)}
+                />
+              )}
             </div>
 
             {/* Categories */}
@@ -438,6 +552,16 @@ export default function BusinessProfileForm({
 
           {/* Media tab */}
           <TabsContent value="media" className="space-y-6 pt-4">
+            {/* Logo */}
+            <div className="space-y-3">
+              <Label>{t("logo")}</Label>
+              <ImageUpload
+                value={formData.logo || ""}
+                onUpload={(url) => update("logo", url)}
+                storagePath={`businesses/${business.slug}/logo`}
+              />
+            </div>
+
             <div className="space-y-3">
               <Label>{t("gallery")}</Label>
               <p className="text-xs text-muted-foreground">{t("gallery_hint")}</p>

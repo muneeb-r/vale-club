@@ -201,7 +201,7 @@ export default function DashboardSidebar({
       {/* ── Desktop sidebar ── */}
       <aside
         className={cn(
-          "hidden md:flex flex-col shrink-0 border-r border-border bg-card transition-all duration-300 ease-in-out sticky top-[5.1rem] h-screen",
+          "hidden md:flex flex-col shrink-0 border-r border-border bg-card transition-all duration-300 ease-in-out sticky top-[5.1rem] h-[calc(100vh-5.1rem)]",
           collapsed ? "w-15" : "w-60",
         )}
       >

@@ -15,7 +15,8 @@
       "Bash(grep:*)",
       "WebFetch(domain:ui.shadcn.com)",
       "Bash(pnpm list flag-icons)",
-      "Bash(lsof -i :3000)"
+      "Bash(lsof -i :3000)",
+      "Bash(head -10 grep -n \"nrt\\\\|NRT\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(dashboard\\\\\\)/dashboard/crear/page.tsx)"
     ],
     "additionalDirectories": [
       "/Users/mc/Desktop/vale.club/app/[locale]/admin",

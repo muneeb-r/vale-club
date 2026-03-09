@@ -43,6 +43,7 @@ export default async function AdminSuscripcionesPage({ params, searchParams }: S
   const requests = JSON.parse(JSON.stringify(rawRequests)) as {
     _id: string;
     status: "pending" | "approved" | "rejected";
+    billingCycle?: "monthly" | "yearly";
     paymentNote: string;
     paymentProofUrl?: string;
     adminNote: string;

@@ -13,6 +13,7 @@ export interface ISubscription extends Document {
   // Snapshot fields — stored at subscription time so history is accurate even if plan changes
   planName: string;
   price: number;
+  billingCycle: "monthly" | "yearly";
   startDate: Date;
   endDate: Date;
   status: SubscriptionStatus;
@@ -39,6 +40,11 @@ const SubscriptionSchema = new Schema<ISubscription>(
     },
     planName: { type: String, required: true },
     price: { type: Number, required: true },
+    billingCycle: {
+      type: String,
+      enum: ["monthly", "yearly"],
+      default: "monthly",
+    },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true, index: true },
     status: {

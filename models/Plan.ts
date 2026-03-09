@@ -13,7 +13,9 @@ export interface IPlanName {
 export interface IPlan extends Document {
   _id: mongoose.Types.ObjectId;
   name: IPlanName;
-  price: number; // monthly price in EUR
+  price: number; // legacy field (kept for backward compat)
+  priceMonthly: number; // monthly price in EUR
+  priceYearly: number;  // yearly price in EUR
   features: IPlanFeature[]; // bilingual feature list
   isActive: boolean;
   createdAt: Date;
@@ -26,7 +28,9 @@ const PlanSchema = new Schema<IPlan>(
       es: { type: String, default: "" },
       en: { type: String, default: "" },
     },
-    price: { type: Number, required: true, min: 0 },
+    price: { type: Number, default: 0, min: 0 },
+    priceMonthly: { type: Number, default: 0, min: 0 },
+    priceYearly: { type: Number, default: 0, min: 0 },
     features: [
       {
         es: { type: String, default: "" },

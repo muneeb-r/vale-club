@@ -25,6 +25,8 @@ export async function PUT(
   const update: Record<string, unknown> = {};
   if (body.name !== undefined) update.name = { es: (body.name.es ?? "").trim(), en: (body.name.en ?? "").trim() };
   if (body.price !== undefined) update.price = Number(body.price);
+  if (body.priceMonthly !== undefined) update.priceMonthly = Number(body.priceMonthly);
+  if (body.priceYearly !== undefined) update.priceYearly = Number(body.priceYearly);
   if (body.features !== undefined)
     update.features = Array.isArray(body.features)
       ? body.features.filter((f: { es?: string; en?: string }) => f?.es || f?.en)
