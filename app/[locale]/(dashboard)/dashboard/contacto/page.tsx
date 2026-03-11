@@ -26,7 +26,7 @@ export default async function ContactoPage({ params }: ContactoPageProps) {
   await connectDB();
   const [rawBusiness, rawCategories] = await Promise.all([
     Business.findOne({ ownerId: user.userId })
-      .populate("categories", "name nameEn icon _id")
+      .populate("categories", "name nameEn nameCa icon _id")
       .lean(),
     Category.find({ isActive: true }).sort({ order: 1 }).lean(),
   ]);

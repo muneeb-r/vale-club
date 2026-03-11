@@ -23,7 +23,7 @@ export async function GET(
   await connectDB();
   const business = await Business.findById(id)
     .populate("ownerId", "name email")
-    .populate("categories", "name nameEn icon")
+    .populate("categories", "name nameEn nameCa icon")
     .populate("planId", "name price features")
     .lean();
 

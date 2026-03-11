@@ -11,6 +11,7 @@ import ReviewSection from "@/components/business/ReviewSection";
 import { Star, MapPin, BadgeCheck, Zap } from "lucide-react";
 import CategoryIcon from "@/components/ui/CategoryIcon";
 import { Link } from "@/lib/navigation";
+import { catName } from "@/lib/utils";
 import BackButton from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 
@@ -93,7 +94,7 @@ export default async function BusinessProfilePage({
     slug,
     status: "active",
   })
-    .populate("categories", "name nameEn slug icon")
+    .populate("categories", "name nameEn nameCa slug icon")
     .lean();
 
   if (!rawBusiness) notFound();
@@ -102,6 +103,7 @@ export default async function BusinessProfilePage({
   const categories = business.categories as Array<{
     name: string;
     nameEn: string;
+    nameCa?: string;
     icon: string;
     slug: string;
   }>;
@@ -227,7 +229,7 @@ export default async function BusinessProfilePage({
                       size="sm"
                       className="text-primary"
                     />
-                    {locale === "en" ? cat.nameEn : cat.name}
+                    {catName(cat, locale)}
                   </span>
                 ))}
               </div>
@@ -302,7 +304,7 @@ export default async function BusinessProfilePage({
                   <img
                     src={business.pricesFileUrl}
                     alt={t("prices")}
-                    className="max-w-full rounded-2xl border border-border"
+                    className="max-w-full"
                   />
                 )}
                 {business.pricesType === "pdf" && business.pricesFileUrl && (

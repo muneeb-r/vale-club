@@ -16,7 +16,9 @@
       "WebFetch(domain:ui.shadcn.com)",
       "Bash(pnpm list flag-icons)",
       "Bash(lsof -i :3000)",
-      "Bash(head -10 grep -n \"nrt\\\\|NRT\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(dashboard\\\\\\)/dashboard/crear/page.tsx)"
+      "Bash(head -10 grep -n \"nrt\\\\|NRT\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(dashboard\\\\\\)/dashboard/crear/page.tsx)",
+      "Bash(sed -i '' 's/populate\\(\"\"categories\"\", \"\"name nameEn slug icon\"\"\\)/populate\\(\"\"categories\"\", \"\"name nameEn nameCa slug icon\"\"\\)/g' \"/Users/mc/Desktop/vale.club/app/[locale]/empresa/[slug]/page.tsx\" \"/Users/mc/Desktop/vale.club/app/[locale]/search/page.tsx\" \"/Users/mc/Desktop/vale.club/app/[locale]/page.tsx\" \"/Users/mc/Desktop/vale.club/app/api/businesses/route.ts\" \"/Users/mc/Desktop/vale.club/app/api/businesses/[slug]/route.ts\")",
+      "Bash(__NEW_LINE_ba89f14722702b99__ sed:*)"
     ],
     "additionalDirectories": [
       "/Users/mc/Desktop/vale.club/app/[locale]/admin",

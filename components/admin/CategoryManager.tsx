@@ -14,6 +14,7 @@ interface Category {
   _id: string;
   name: string;
   nameEn: string;
+  nameCa?: string;
   icon: string;
   slug: string;
   order: number;
@@ -45,7 +46,7 @@ export default function CategoryManager({ categories: initial }: { categories: C
   const router = useRouter();
   const t = useTranslations("admin");
   const [loading, setLoading] = useState<string | null>(null);
-  const [newCat, setNewCat] = useState({ name: "", nameEn: "", icon: "mdi:home", order: 0 });
+  const [newCat, setNewCat] = useState({ name: "", nameEn: "", nameCa: "", icon: "mdi:home", order: 0 });
   const [editingIcon, setEditingIcon] = useState<{ id: string; icon: string } | null>(null);
 
   async function createCategory() {
@@ -56,7 +57,7 @@ export default function CategoryManager({ categories: initial }: { categories: C
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...newCat, slug: slugify(newCat.name), isActive: true }),
     });
-    setNewCat({ name: "", nameEn: "", icon: "mdi:home", order: 0 });
+    setNewCat({ name: "", nameEn: "", nameCa: "", icon: "mdi:home", order: 0 });
     setLoading(null);
     router.refresh();
   }
@@ -101,7 +102,7 @@ export default function CategoryManager({ categories: initial }: { categories: C
           {t("new_category")}
         </h3>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div className="space-y-2">
             <Label>{t("name_es")}</Label>
             <Input value={newCat.name} onChange={(e) => setNewCat((p) => ({ ...p, name: e.target.value }))} placeholder="Hogar" className="rounded-xl" />
@@ -109,6 +110,10 @@ export default function CategoryManager({ categories: initial }: { categories: C
           <div className="space-y-2">
             <Label>{t("name_en")}</Label>
             <Input value={newCat.nameEn} onChange={(e) => setNewCat((p) => ({ ...p, nameEn: e.target.value }))} placeholder="Home" className="rounded-xl" />
+          </div>
+          <div className="space-y-2">
+            <Label>Nom CA</Label>
+            <Input value={newCat.nameCa} onChange={(e) => setNewCat((p) => ({ ...p, nameCa: e.target.value }))} placeholder="Llar" className="rounded-xl" />
           </div>
         </div>
 
@@ -209,7 +214,7 @@ export default function CategoryManager({ categories: initial }: { categories: C
                       >
                         <CategoryIcon icon={cat.icon} size="md" />
                       </button>
-                      {cat.name} / {cat.nameEn}
+                      {cat.name} / {cat.nameEn}{cat.nameCa ? ` / ${cat.nameCa}` : ""}
                     </div>
                   )}
                 </td>

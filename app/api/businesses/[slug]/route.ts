@@ -14,7 +14,7 @@ export async function GET(
     slug,
     status: "active",
   })
-    .populate("categories", "name nameEn slug icon")
+    .populate("categories", "name nameEn nameCa slug icon")
     .lean();
 
   if (!business) {
@@ -61,7 +61,7 @@ export async function PUT(
     { slug },
     { $set: body },
     { new: true, runValidators: true }
-  ).populate("categories", "name nameEn slug icon");
+  ).populate("categories", "name nameEn nameCa slug icon");
 
   return NextResponse.json(updated);
 }

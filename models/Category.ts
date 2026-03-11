@@ -2,8 +2,9 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface ICategory extends Document {
   _id: mongoose.Types.ObjectId;
-  name: string;
-  nameEn: string;
+  name: string;    // Spanish
+  nameEn: string;  // English
+  nameCa: string;  // Catalan
   slug: string;
   icon: string;
   description?: string;
@@ -18,6 +19,7 @@ const CategorySchema = new Schema<ICategory>(
   {
     name: { type: String, required: true, trim: true },        // Spanish name
     nameEn: { type: String, required: true, trim: true },      // English name
+    nameCa: { type: String, default: "", trim: true },         // Catalan name
     slug: { type: String, required: true, unique: true, index: true },
     icon: { type: String, default: "🏢" },
     description: { type: String },

@@ -13,13 +13,15 @@ import { AddressAutocomplete, CityAutocomplete, PlaceResult } from "./PlacesAuto
 import { toast } from "sonner";
 import { X, CheckCircle2, Circle, ChevronRight, Upload, FileText, Image as ImageIcon } from "lucide-react";
 import CategoryIcon from "@/components/ui/CategoryIcon";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { storage } from "@/lib/firebase";
+import { catName } from "@/lib/utils";
 
 interface Category {
   _id: string;
   name: string;
   nameEn: string;
+  nameCa?: string;
   icon: string;
 }
 
@@ -84,17 +86,32 @@ function getChecklist(data: BusinessData, t: (k: string) => string): CheckItem[]
 
 // ── PricesFileUpload ─────────────────────────────────────────────────────────
 
+async function deleteFirebaseUrl(url: string) {
+  try {
+    // Firebase download URLs encode the path after "/o/" and before "?"
+    const match = url.match(/\/o\/(.+?)\?/);
+    if (!match) return;
+    const path = decodeURIComponent(match[1]);
+    await deleteObject(ref(storage, path));
+  } catch {
+    // file may not exist — ignore
+  }
+}
+
 function PricesFileUpload({
   slug,
   type,
   currentUrl,
   onUploaded,
+  onRemoved,
 }: {
   slug: string;
   type: "pdf" | "image";
   currentUrl?: string;
   onUploaded: (url: string) => void;
+  onRemoved: () => void;
 }) {
+  const t = useTranslations("dashboard");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -104,6 +121,8 @@ function PricesFileUpload({
     const allowed = type === "pdf" ? allowedPdf : allowedImage;
     if (!allowed.includes(file.type)) return;
     setUploading(true);
+    // Delete previous file before uploading new one
+    if (currentUrl) await deleteFirebaseUrl(currentUrl);
     const ext = file.name.split(".").pop();
     const path = `businesses/${slug}/prices-${Date.now()}.${ext}`;
     const storageRef = ref(storage, path);
@@ -121,18 +140,29 @@ function PricesFileUpload({
     );
   }
 
+  async function handleRemove() {
+    if (currentUrl) await deleteFirebaseUrl(currentUrl);
+    onRemoved();
+  }
+
   return (
     <div className="space-y-2">
       {currentUrl && (
-        type === "pdf" ? (
-          <a href={currentUrl} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
-            <FileText className="w-4 h-4" /> Ver PDF actual
-          </a>
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={currentUrl} alt="Precios" className="max-h-48 rounded-xl border border-border object-contain" />
-        )
+        <div className="flex items-start gap-2">
+          {type === "pdf" ? (
+            <a href={currentUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+              <FileText className="w-4 h-4" /> PDF
+            </a>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={currentUrl} alt="" className="max-h-48 rounded-xl border border-border object-contain" />
+          )}
+          <button type="button" onClick={handleRemove}
+            className="p-1 rounded-full hover:bg-destructive/10 text-destructive shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       )}
       <label className="cursor-pointer">
         <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-colors ${
@@ -140,7 +170,7 @@ function PricesFileUpload({
         }`}>
           {type === "pdf" ? <FileText className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
           <Upload className="w-4 h-4" />
-          {uploading ? `${progress}%` : currentUrl ? "Cambiar archivo" : `Subir ${type === "pdf" ? "PDF" : "imagen"}`}
+          {uploading ? `${progress}%` : currentUrl ? t("prices_change_file") : type === "pdf" ? t("prices_upload_pdf") : t("prices_upload_image")}
         </div>
         <input
           type="file"
@@ -249,6 +279,13 @@ export default function BusinessProfileForm({
   }
 
   async function handleSave() {
+    // If user switched away from pdf/image type, delete the old file from Firebase
+    const origType = business.pricesType ?? "text";
+    const newType = formData.pricesType ?? "text";
+    if (origType !== newType && (origType === "pdf" || origType === "image") && business.pricesFileUrl) {
+      deleteFirebaseUrl(business.pricesFileUrl);
+    }
+
     startTransition(async () => {
       const res = await fetch(`/api/businesses/${business.slug}`, {
         method: "PUT",
@@ -444,14 +481,16 @@ export default function BusinessProfileForm({
                   <button
                     key={type}
                     type="button"
-                    onClick={() => update("pricesType", type)}
+                    onClick={() => {
+                      update("pricesType", type);
+                    }}
                     className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
                       (formData.pricesType ?? "text") === type
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-muted text-muted-foreground border-border hover:border-primary"
                     }`}
                   >
-                    {type === "text" ? t("prices_type_text") : type === "pdf" ? "PDF" : t("prices_type_image")}
+                    {type === "text" ? t("prices_type_text") : type === "pdf" ? t("prices_type_pdf") : t("prices_type_image")}
                   </button>
                 ))}
               </div>
@@ -470,6 +509,7 @@ export default function BusinessProfileForm({
                   type={formData.pricesType}
                   currentUrl={formData.pricesFileUrl}
                   onUploaded={(url) => update("pricesFileUrl", url)}
+                  onRemoved={() => update("pricesFileUrl", "")}
                 />
               )}
             </div>
@@ -506,7 +546,7 @@ export default function BusinessProfileForm({
                         }`}
                       >
                         <CategoryIcon icon={cat.icon} size="sm" />
-                        {locale === "en" ? cat.nameEn : cat.name}
+                        {catName(cat, locale)}
                       </button>
                     );
                   })}

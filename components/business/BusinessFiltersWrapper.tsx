@@ -4,6 +4,7 @@ interface Category {
   _id: string;
   name: string;
   nameEn: string;
+  nameCa?: string;
   icon: string;
 }
 

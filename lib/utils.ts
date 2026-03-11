@@ -29,3 +29,9 @@ export function truncate(str: string, length: number): string {
 export function formatRating(rating: number): string {
   return rating.toFixed(1);
 }
+
+export function catName(cat: { name: string; nameEn: string; nameCa?: string }, locale: string): string {
+  if (locale === "ca") return cat.nameCa || cat.name;
+  if (locale === "en") return cat.nameEn;
+  return cat.name;
+}

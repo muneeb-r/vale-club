@@ -15,7 +15,7 @@ export default async function DashboardPage() {
 
   await connectDB();
   const rawBusiness = await Business.findOne({ ownerId: user.userId })
-    .populate("categories", "name nameEn icon")
+    .populate("categories", "name nameEn nameCa icon")
     .lean();
 
   const business = rawBusiness ? JSON.parse(JSON.stringify(rawBusiness)) : null;

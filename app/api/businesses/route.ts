@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       .sort(sortOptions)
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate("categories", "name nameEn slug icon")
+      .populate("categories", "name nameEn nameCa slug icon")
       .lean(),
     Business.countDocuments(filter),
   ]);

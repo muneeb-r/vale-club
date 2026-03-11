@@ -28,11 +28,11 @@ export default async function HomePage({ params }: HomePageProps) {
   await connectDB();
 
   const [rawCategories, rawBusinesses] = await Promise.all([
-    Category.find({ isActive: true }).sort({ order: 1 }).limit(12).lean(),
+    Category.find({ isActive: true }).sort({ order: 1 }).limit(16).lean(),
     Business.find({ status: "active" })
       .sort({ plan: -1, rating: -1 })
       .limit(6)
-      .populate("categories", "name nameEn slug icon")
+      .populate("categories", "name nameEn nameCa slug icon")
       .lean(),
   ]);
 
@@ -111,7 +111,10 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <main className="min-h-screen">
       {/* ─── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-black" style={{ minHeight: "560px" }}>
+      <section
+        className="relative overflow-hidden bg-black"
+        style={{ minHeight: "560px" }}
+      >
         {/* Vimeo video background */}
         <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
           <iframe

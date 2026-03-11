@@ -1,11 +1,12 @@
 import { Link } from "@/lib/navigation";
-import { truncate } from "@/lib/utils";
+import { truncate, catName } from "@/lib/utils";
 import { MapPin, Star, BadgeCheck, Zap } from "lucide-react";
 import CategoryIcon from "@/components/ui/CategoryIcon";
 
 interface Category {
   name: string;
   nameEn: string;
+  nameCa?: string;
   icon: string;
 }
 
@@ -26,10 +27,9 @@ interface BusinessCardProps {
 }
 
 export default function BusinessCard({ business, locale }: BusinessCardProps) {
-  const categoryName =
-    locale === "en"
-      ? business.categories[0]?.nameEn
-      : business.categories[0]?.name;
+  const categoryName = business.categories[0]
+    ? catName(business.categories[0], locale)
+    : undefined;
 
   const grace = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const isFeatured =

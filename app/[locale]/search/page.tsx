@@ -106,7 +106,7 @@ export default async function SearchPage({
         .sort(sortOptions)
         .skip((page - 1) * LIMIT)
         .limit(LIMIT)
-        .populate("categories", "name nameEn slug icon")
+        .populate("categories", "name nameEn nameCa slug icon")
         .lean(),
       Business.countDocuments(filter),
       Category.find({ isActive: true }).sort({ order: 1 }).lean(),
@@ -124,7 +124,7 @@ export default async function SearchPage({
           .sort(fallbackSort)
           .skip((page - 1) * LIMIT)
           .limit(LIMIT)
-          .populate("categories", "name nameEn slug icon")
+          .populate("categories", "name nameEn nameCa slug icon")
           .lean(),
         Business.countDocuments(filter),
         Category.find({ isActive: true }).sort({ order: 1 }).lean(),

@@ -30,8 +30,8 @@ const SLUG_TO_ICON: Record<string, string> = {
   mascotas:                 "mdi:paw",
   eventos:                  "mdi:party-popper",
   finanzas:                 "mdi:cash",
-  "arquitectos-inmobiliarias": "mdi:office-building",
-  "vale-shop":              "mdi:shopping",
+  construccion:             "mdi:hammer",
+  inmobiliaria:             "mdi:office-building",
   hoteles:                  "mdi:bed",
 };
 

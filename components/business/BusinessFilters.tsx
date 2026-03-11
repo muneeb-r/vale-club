@@ -34,11 +34,13 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
+import { catName } from "@/lib/utils";
 
 interface Category {
   _id: string;
   name: string;
   nameEn: string;
+  nameCa?: string;
   icon: string;
 }
 
@@ -199,7 +201,7 @@ export default function BusinessFilters({
             <SelectItem value="all">{t("all_categories")}</SelectItem>
             {categories.map((cat) => (
               <SelectItem key={cat._id} value={cat._id}>
-                {locale === "en" ? cat.nameEn : cat.name}
+                {catName(cat, locale)}
               </SelectItem>
             ))}
           </SelectContent>
