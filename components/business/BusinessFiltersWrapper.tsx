@@ -6,10 +6,14 @@ interface Category {
   nameEn: string;
   nameCa?: string;
   icon: string;
+  parentCategory?: string;
 }
 
 interface BusinessFiltersWrapperProps {
-  categories: Category[];
+  categories: {
+    parents: Category[];
+    subcategories: Category[];
+  };
   locale: string;
 }
 

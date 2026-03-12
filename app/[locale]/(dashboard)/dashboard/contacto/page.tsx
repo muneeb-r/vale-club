@@ -43,7 +43,11 @@ export default async function ContactoPage({ params }: ContactoPageProps) {
   }
 
   const business = JSON.parse(JSON.stringify(rawBusiness));
-  const categories = JSON.parse(JSON.stringify(rawCategories));
+  const allCategories = JSON.parse(JSON.stringify(rawCategories));
+  const categories = {
+    parents: allCategories.filter((c: { parentCategory?: string }) => !c.parentCategory),
+    subcategories: allCategories.filter((c: { parentCategory?: string }) => !!c.parentCategory),
+  };
 
   if (business.status === "inreview") {
     return (

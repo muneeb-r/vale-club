@@ -135,7 +135,12 @@ export default async function SearchPage({
   }
 
   const businesses = JSON.parse(JSON.stringify(rawBusinesses));
-  const categories = JSON.parse(JSON.stringify(rawCategories));
+  const allCategories = JSON.parse(JSON.stringify(rawCategories));
+  // Split into parents (no parentCategory) and subcategories (have parentCategory)
+  const categories = {
+    parents: allCategories.filter((c: { parentCategory?: string }) => !c.parentCategory),
+    subcategories: allCategories.filter((c: { parentCategory?: string }) => !!c.parentCategory),
+  };
 
   const plainSearchParams: Record<string, string> = {};
   for (const [k, v] of Object.entries(rawParams)) {

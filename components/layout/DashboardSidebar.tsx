@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   Menu,
   Building2,
+  Package,
 } from "lucide-react";
 import {
   Drawer,
@@ -28,7 +29,8 @@ interface NavLink {
     | "/dashboard/perfil"
     | "/dashboard/contacto"
     | "/dashboard/resenas"
-    | "/dashboard/plan";
+    | "/dashboard/plan"
+    | "/dashboard/pedidos";
   label: string;
   icon: React.ElementType;
   exact: boolean;
@@ -125,6 +127,12 @@ export default function DashboardSidebar({
       href: "/dashboard/resenas",
       label: t("reviews"),
       icon: Star,
+      exact: false,
+    },
+    {
+      href: "/dashboard/pedidos",
+      label: t("orders"),
+      icon: Package,
       exact: false,
     },
     {

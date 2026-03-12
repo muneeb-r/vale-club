@@ -15,6 +15,8 @@ import {
   Loader2,
   X,
   Search,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import {
   Select,
@@ -23,6 +25,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Drawer,
   DrawerContent,
@@ -42,10 +54,14 @@ interface Category {
   nameEn: string;
   nameCa?: string;
   icon: string;
+  parentCategory?: string;
 }
 
 interface BusinessFiltersProps {
-  categories: Category[];
+  categories: {
+    parents: Category[];
+    subcategories: Category[];
+  };
   locale: string;
 }
 
@@ -58,7 +74,7 @@ export default function BusinessFilters({
   const searchParams = useSearchParams();
   const t = useTranslations("search");
   const [open, setOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState(false);
@@ -190,22 +206,89 @@ export default function BusinessFilters({
         <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           {t("filter_category")}
         </Label>
-        <Select
-          defaultValue={searchParams.get("category") || "all"}
-          onValueChange={(val) => updateFilter("category", val)}
-        >
-          <SelectTrigger className="w-full rounded-xl h-9 text-sm">
-            <SelectValue placeholder={t("all_categories")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("all_categories")}</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat._id} value={cat._id}>
-                {catName(cat, locale)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="w-full rounded-xl h-9 text-sm border border-input bg-background px-3 flex items-center justify-between gap-2 hover:bg-accent/50 transition-colors"
+            >
+              <span className="truncate text-left">
+                {(() => {
+                  const sel = searchParams.get("category");
+                  if (!sel) return t("all_categories");
+                  const parent = categories.parents.find((p) => p._id === sel);
+                  if (parent) return catName(parent, locale);
+                  const sub = categories.subcategories.find((s) => s._id === sel);
+                  return sub ? catName(sub, locale) : t("all_categories");
+                })()}
+              </span>
+              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="start">
+            <DropdownMenuItem
+              onSelect={() => updateFilter("category", "all")}
+              className="flex items-center justify-between"
+            >
+              {t("all_categories")}
+              {!searchParams.get("category") && <Check className="w-3.5 h-3.5 text-primary" />}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {categories.parents.map((parent) => {
+              const subs = categories.subcategories.filter(
+                (s) => s.parentCategory === parent._id,
+              );
+              const isParentSelected = searchParams.get("category") === parent._id;
+
+              if (subs.length === 0) {
+                return (
+                  <DropdownMenuItem
+                    key={parent._id}
+                    onSelect={() => updateFilter("category", parent._id)}
+                    className="flex items-center justify-between font-medium"
+                  >
+                    {catName(parent, locale)}
+                    {isParentSelected && <Check className="w-3.5 h-3.5 text-primary" />}
+                  </DropdownMenuItem>
+                );
+              }
+
+              return (
+                <DropdownMenuSub key={parent._id}>
+                  <DropdownMenuSubTrigger
+                    className={`font-medium ${isParentSelected ? "text-primary" : ""}`}
+                    onClick={() => updateFilter("category", parent._id)}
+                  >
+                    {catName(parent, locale)}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      onSelect={() => updateFilter("category", parent._id)}
+                      className="flex items-center justify-between"
+                    >
+                      {t("all_in_category", { category: catName(parent, locale) })}
+                      {isParentSelected && <Check className="w-3.5 h-3.5 text-primary" />}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {subs.map((sub) => {
+                      const isSubSelected = searchParams.get("category") === sub._id;
+                      return (
+                        <DropdownMenuItem
+                          key={sub._id}
+                          onSelect={() => updateFilter("category", sub._id)}
+                          className="flex items-center justify-between"
+                        >
+                          {catName(sub, locale)}
+                          {isSubSelected && <Check className="w-3.5 h-3.5 text-primary" />}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Location: city input + GPS button */}

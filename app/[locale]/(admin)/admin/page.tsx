@@ -2,7 +2,7 @@ import { connectDB } from "@/lib/db";
 import { Business } from "@/models/Business";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/navigation";
-import { Building2, Clock, Tag } from "lucide-react";
+import { Building2, Clock, Tag, ShoppingBag } from "lucide-react";
 
 interface AdminPageProps {
   params: Promise<{ locale: string }>;
@@ -62,6 +62,14 @@ export default async function AdminPage() {
             <p className="text-sm text-muted-foreground mt-1">
               Gestionar categorías
             </p>
+          </div>
+        </Link>
+
+        <Link href="/admin/shop">
+          <div className="bg-card rounded-2xl p-5 border border-border hover:border-primary hover:shadow-md transition-all cursor-pointer">
+            <ShoppingBag className="w-6 h-6 text-primary mb-3" />
+            <p className="font-heading font-semibold text-foreground">Vale Shop</p>
+            <p className="text-sm text-muted-foreground mt-1">Gestionar servicios</p>
           </div>
         </Link>
       </div>

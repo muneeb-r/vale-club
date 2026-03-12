@@ -20,6 +20,9 @@ export default async function DashboardPage() {
 
   const business = rawBusiness ? JSON.parse(JSON.stringify(rawBusiness)) : null;
 
+  // Redirect customers (role: "user") to their profile page
+  if (user.role === "user") redirect("/perfil");
+
   // Plan expiry helpers
   const now = new Date();
   const featuredUntil = business?.featuredUntil ? new Date(business.featuredUntil) : null;

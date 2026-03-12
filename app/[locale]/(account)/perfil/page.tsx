@@ -5,12 +5,21 @@ import { connectDB } from "@/lib/db";
 import { User } from "@/models/User";
 import { Review } from "@/models/Review";
 import { BusinessReview } from "@/models/BusinessReview";
+import { ShopOrder } from "@/models/ShopOrder";
 import UserProfileForm from "@/components/forms/UserProfileForm";
 import StarRating from "@/components/business/StarRating";
 import ReviewEditForm from "@/components/forms/ReviewEditForm";
 import PaginationBar from "@/components/ui/PaginationBar";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/lib/navigation";
+import { Package, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+
+const ORDER_STATUS_CONFIG = {
+  new:         { color: "bg-blue-50 text-blue-700 border-blue-200",   Icon: Clock },
+  in_progress: { color: "bg-amber-50 text-amber-700 border-amber-200", Icon: Loader2 },
+  done:        { color: "bg-green-50 text-green-700 border-green-200", Icon: CheckCircle2 },
+  cancelled:   { color: "bg-red-50 text-red-700 border-red-200",       Icon: XCircle },
+} as const;
 
 interface PerfilPageProps {
   params: Promise<{ locale: string }>;
@@ -44,7 +53,7 @@ export default async function PerfilPage({ searchParams }: PerfilPageProps) {
 
   const reviewFilter = { userId: jwtUser.userId };
 
-  const [rawReviews, total, rawBizReviews] = await Promise.all([
+  const [rawReviews, total, rawBizReviews, rawOrders] = await Promise.all([
     Review.find(reviewFilter)
       .populate("businessId", "name slug")
       .sort({ createdAt: -1 })
@@ -54,6 +63,10 @@ export default async function PerfilPage({ searchParams }: PerfilPageProps) {
     Review.countDocuments(reviewFilter),
     BusinessReview.find({ userId: jwtUser.userId, isPublished: true })
       .populate("businessId", "name slug")
+      .sort({ createdAt: -1 })
+      .lean(),
+    ShopOrder.find({ email: jwtUser.email })
+      .populate("serviceId", "name priceType price promoPrice")
       .sort({ createdAt: -1 })
       .lean(),
   ]);
@@ -84,6 +97,18 @@ export default async function PerfilPage({ searchParams }: PerfilPageProps) {
     createdAt: string;
     businessId: { name: string; slug: string } | null;
   }>;
+
+  const orders = JSON.parse(JSON.stringify(rawOrders)) as Array<{
+    _id: string;
+    serviceId?: { name: { es: string; en: string; ca: string }; price?: number; promoPrice?: number };
+    type: "purchase" | "quote";
+    message: string;
+    status: keyof typeof ORDER_STATUS_CONFIG;
+    adminNote: string;
+    createdAt: string;
+  }>;
+
+  const tShop = await getTranslations("shop");
 
   const statusBadge = (
     status: "pending" | "approved" | "rejected",
@@ -260,6 +285,66 @@ export default async function PerfilPage({ searchParams }: PerfilPageProps) {
                   <p className="text-sm text-muted-foreground">{br.text}</p>
                 </div>
               ))}
+            </div>
+          )}
+        </section>
+
+        {/* ── Shop orders ── */}
+        <section className="space-y-4">
+          <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
+            <Package className="w-5 h-5 text-primary" />
+            {tShop("my_orders_title")}
+            {orders.length > 0 && (
+              <span className="text-muted-foreground font-normal text-base">({orders.length})</span>
+            )}
+          </h2>
+
+          {orders.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{tShop("my_orders_empty")}</p>
+          ) : (
+            <div className="space-y-3">
+              {orders.map((order) => {
+                const cfg = ORDER_STATUS_CONFIG[order.status] ?? ORDER_STATUS_CONFIG.new;
+                const { Icon } = cfg;
+                const price = order.serviceId?.promoPrice ?? order.serviceId?.price;
+                return (
+                  <div key={order._id} className="bg-card border border-border rounded-2xl p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm text-foreground truncate">
+                          {order.serviceId?.name?.es ?? "—"}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {order.type === "quote" ? tShop("my_orders_type_quote") : tShop("my_orders_type_purchase")}
+                          {price ? ` · ${price} €` : ""}
+                        </p>
+                      </div>
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs border font-medium shrink-0 ${cfg.color}`}>
+                        <Icon className="w-3 h-3" />
+                        {tShop(`my_orders_status_${order.status}` as Parameters<typeof tShop>[0])}
+                      </span>
+                    </div>
+
+                    {order.message && (
+                      <div className="bg-muted/50 rounded-xl px-3 py-2">
+                        <p className="text-xs text-muted-foreground mb-0.5">{tShop("my_orders_message")}</p>
+                        <p className="text-sm text-foreground">{order.message}</p>
+                      </div>
+                    )}
+
+                    {order.adminNote && (
+                      <div className="bg-primary/5 border border-primary/20 rounded-xl px-3 py-2">
+                        <p className="text-xs text-primary font-medium mb-0.5">Nota del equipo</p>
+                        <p className="text-sm text-foreground">{order.adminNote}</p>
+                      </div>
+                    )}
+
+                    <p className="text-xs text-muted-foreground">
+                      {tShop("my_orders_date")}: {new Date(order.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>

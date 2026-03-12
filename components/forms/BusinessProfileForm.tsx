@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +23,7 @@ interface Category {
   nameEn: string;
   nameCa?: string;
   icon: string;
+  parentCategory?: string;
 }
 
 interface BusinessData {
@@ -54,7 +55,10 @@ interface BusinessData {
 
 interface BusinessProfileFormProps {
   business: BusinessData;
-  categories: Category[];
+  categories: {
+    parents: Category[];
+    subcategories: Category[];
+  };
   locale: string;
   defaultTab?: "info" | "contact" | "media";
 }
@@ -200,6 +204,38 @@ export default function BusinessProfileForm({
   const dragIndex = useRef<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"info" | "contact" | "media">(defaultTab);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const [expandedParents, setExpandedParents] = useState<Set<string>>(() => {
+    // Pre-expand parents that have a selected subcategory
+    const selected = new Set(
+      business.categories.map((c) => (typeof c === "string" ? c : c._id))
+    );
+    return new Set(
+      categories.subcategories
+        .filter((s) => s.parentCategory && selected.has(s._id))
+        .map((s) => s.parentCategory!)
+    );
+  });
+  const catDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!catDropdownOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target as Node)) {
+        setCatDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [catDropdownOpen]);
+
+  const toggleParent = useCallback((id: string) => {
+    setExpandedParents((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
 
   function update(field: string, value: unknown) {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -515,41 +551,192 @@ export default function BusinessProfileForm({
             </div>
 
             {/* Categories */}
-            {categories.length > 0 && (
-              <div className="space-y-2">
+            {categories.parents.length > 0 && (
+              <div className="space-y-1.5">
                 <Label>{t("categories")}</Label>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((cat) => {
-                    const selected = formData.categories.some(
-                      (c) => (typeof c === "string" ? c : c._id) === cat._id
-                    );
-                    return (
+
+                {/* Selected pills — show parent + subcategory pills, group by parent */}
+                {(() => {
+                  const selectedIds = new Set(
+                    formData.categories.map((c) => (typeof c === "string" ? c : c._id))
+                  );
+                  // Find which parent is active (the one whose subs are selected, or a parentless selection)
+                  const activeParent = categories.parents.find((p) =>
+                    categories.subcategories.some(
+                      (s) => s.parentCategory === p._id && selectedIds.has(s._id)
+                    ) || selectedIds.has(p._id)
+                  );
+                  if (!activeParent) return null;
+                  const activeSubs = categories.subcategories.filter(
+                    (s) => s.parentCategory === activeParent._id && selectedIds.has(s._id)
+                  );
+                  return (
+                    <div className="flex flex-wrap gap-1.5 items-center">
+                      {/* Parent pill */}
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-primary/15 text-primary border border-primary/30 font-medium">
+                        <CategoryIcon icon={activeParent.icon} size="sm" />
+                        {catName(activeParent, locale)}
+                      </span>
+                      {activeSubs.map((sub) => (
+                        <span
+                          key={sub._id}
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-primary/10 text-primary border border-primary/20"
+                        >
+                          {catName(sub, locale)}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const remaining = formData.categories.filter(
+                                (x) => (typeof x === "string" ? x : x._id) !== sub._id
+                              );
+                              // If no subs remain for this parent, clear parent too
+                              const remainingSubs = categories.subcategories.filter(
+                                (s) => s.parentCategory === activeParent._id &&
+                                  remaining.some((x) => (typeof x === "string" ? x : x._id) === s._id)
+                              );
+                              if (remainingSubs.length === 0) {
+                                update("categories", remaining.filter(
+                                  (x) => (typeof x === "string" ? x : x._id) !== activeParent._id
+                                ));
+                              } else {
+                                update("categories", remaining);
+                              }
+                            }}
+                            className="hover:text-destructive transition-colors ml-0.5"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                      {/* Clear all */}
                       <button
-                        key={cat._id}
                         type="button"
-                        onClick={() => {
-                          if (selected) {
-                            update(
-                              "categories",
-                              formData.categories.filter(
-                                (c) => (typeof c === "string" ? c : c._id) !== cat._id
-                              )
-                            );
-                          } else {
-                            update("categories", [...formData.categories, cat]);
-                          }
-                        }}
-                        className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                          selected
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-muted text-muted-foreground border-border hover:border-primary"
-                        }`}
+                        onClick={() => update("categories", [])}
+                        className="text-xs text-muted-foreground hover:text-destructive transition-colors"
                       >
-                        <CategoryIcon icon={cat.icon} size="sm" />
-                        {catName(cat, locale)}
+                        <X className="w-3.5 h-3.5" />
                       </button>
-                    );
-                  })}
+                    </div>
+                  );
+                })()}
+
+                {/* Dropdown trigger */}
+                <div className="relative" ref={catDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setCatDropdownOpen((v) => !v)}
+                    className="w-full flex items-center justify-between gap-2 rounded-xl border border-input bg-background px-3 h-9 text-sm hover:bg-muted/50 transition-colors"
+                  >
+                    <span className="text-muted-foreground">
+                      {t("categories_add")}
+                    </span>
+                    <ChevronRight className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${catDropdownOpen ? "rotate-90" : ""}`} />
+                  </button>
+
+                  {catDropdownOpen && (
+                    <div className="absolute z-50 mt-1 w-full rounded-xl border border-border bg-popover shadow-lg max-h-72 overflow-y-auto">
+                      {categories.parents.map((parent) => {
+                        const subs = categories.subcategories.filter(
+                          (s) => s.parentCategory === parent._id
+                        );
+                        const isExpanded = expandedParents.has(parent._id);
+
+                        return (
+                          <div key={parent._id} className="border-b border-border last:border-0">
+                            {/* Parent header row — click to expand */}
+                            <button
+                              type="button"
+                              onClick={() => toggleParent(parent._id)}
+                              className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-muted/50 transition-colors"
+                            >
+                              <span className="flex items-center gap-2">
+                                <CategoryIcon icon={parent.icon} size="sm" className="text-muted-foreground" />
+                                {catName(parent, locale)}
+                              </span>
+                              <ChevronRight className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                            </button>
+
+                            {/* Subcategory checkboxes */}
+                            {isExpanded && (
+                              <div className="pb-1">
+                                {subs.map((sub) => {
+                                  const checked = formData.categories.some(
+                                    (c) => (typeof c === "string" ? c : c._id) === sub._id
+                                  );
+                                  return (
+                                    <label
+                                      key={sub._id}
+                                      className="flex items-center gap-2.5 pl-8 pr-3 py-1.5 text-sm cursor-pointer hover:bg-muted/40 transition-colors"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={checked}
+                                        onChange={() => {
+                                          const currentIds = formData.categories.map(
+                                            (c) => (typeof c === "string" ? c : c._id)
+                                          );
+                                          // Find currently active parent (if any)
+                                          const currentParent = categories.parents.find((p) =>
+                                            categories.subcategories.some(
+                                              (s) => s.parentCategory === p._id && currentIds.includes(s._id)
+                                            ) || currentIds.includes(p._id)
+                                          );
+
+                                          if (checked) {
+                                            // Uncheck: remove sub; if no subs remain for parent, remove parent too
+                                            const remaining = formData.categories.filter(
+                                              (c) => (typeof c === "string" ? c : c._id) !== sub._id
+                                            );
+                                            const remainingSubs = categories.subcategories.filter(
+                                              (s) => s.parentCategory === parent._id &&
+                                                remaining.some((c) => (typeof c === "string" ? c : c._id) === s._id)
+                                            );
+                                            if (remainingSubs.length === 0) {
+                                              update("categories", remaining.filter(
+                                                (c) => (typeof c === "string" ? c : c._id) !== parent._id
+                                              ));
+                                            } else {
+                                              update("categories", remaining);
+                                            }
+                                          } else {
+                                            // Check: if switching to a different parent, clear previous parent & its subs
+                                            let base = formData.categories;
+                                            if (currentParent && currentParent._id !== parent._id) {
+                                              const prevSiblingIds = new Set(
+                                                categories.subcategories
+                                                  .filter((s) => s.parentCategory === currentParent._id)
+                                                  .map((s) => s._id)
+                                              );
+                                              base = base.filter((c) => {
+                                                const id = typeof c === "string" ? c : c._id;
+                                                return id !== currentParent._id && !prevSiblingIds.has(id);
+                                              });
+                                            }
+                                            // Auto-add parent if not already present
+                                            const hasParent = base.some(
+                                              (c) => (typeof c === "string" ? c : c._id) === parent._id
+                                            );
+                                            const next = hasParent ? [...base, sub] : [...base, parent, sub];
+                                            update("categories", next);
+                                            // Auto-expand this parent
+                                            setExpandedParents((prev) => new Set([...prev, parent._id]));
+                                          }
+                                        }}
+                                        className="accent-primary w-3.5 h-3.5 rounded"
+                                      />
+                                      <span className={checked ? "text-foreground font-medium" : "text-muted-foreground"}>
+                                        {catName(sub, locale)}
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

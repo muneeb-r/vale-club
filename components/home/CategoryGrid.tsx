@@ -22,7 +22,7 @@ export default function CategoryGrid({ categories, locale }: CategoryGridProps) 
       {categories.map((cat) => (
         <Link
           key={cat._id}
-          href={("/search?category=" + cat._id) as "/search"}
+          href={(cat.slug === "vale-shop" ? "/shop" : "/search?category=" + cat._id) as "/search"}
           className="group"
         >
           <div className="bg-card rounded-2xl p-4 flex flex-col items-center gap-2 border border-border hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer">

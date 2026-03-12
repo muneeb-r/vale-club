@@ -18,7 +18,12 @@
       "Bash(lsof -i :3000)",
       "Bash(head -10 grep -n \"nrt\\\\|NRT\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(dashboard\\\\\\)/dashboard/crear/page.tsx)",
       "Bash(sed -i '' 's/populate\\(\"\"categories\"\", \"\"name nameEn slug icon\"\"\\)/populate\\(\"\"categories\"\", \"\"name nameEn nameCa slug icon\"\"\\)/g' \"/Users/mc/Desktop/vale.club/app/[locale]/empresa/[slug]/page.tsx\" \"/Users/mc/Desktop/vale.club/app/[locale]/search/page.tsx\" \"/Users/mc/Desktop/vale.club/app/[locale]/page.tsx\" \"/Users/mc/Desktop/vale.club/app/api/businesses/route.ts\" \"/Users/mc/Desktop/vale.club/app/api/businesses/[slug]/route.ts\")",
-      "Bash(__NEW_LINE_ba89f14722702b99__ sed:*)"
+      "Bash(__NEW_LINE_ba89f14722702b99__ sed:*)",
+      "Bash(grep -n '\"\"shop\"\"' /Users/mc/Desktop/vale.club/messages/ca.json)",
+      "Bash(npx tsc:*)",
+      "Bash(npx shadcn@latest add popover)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(grep -n \"order.name\\\\|order.email\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(dashboard\\\\\\)/dashboard/pedidos/page.tsx)"
     ],
     "additionalDirectories": [
       "/Users/mc/Desktop/vale.club/app/[locale]/admin",
@@ -27,7 +32,13 @@
       "/Users/mc/Desktop/vale.club",
       "/Users/mc/Desktop/vale.club/app/api/business-reviews",
       "/Users/mc/Desktop/vale.club/app/[locale]/usuario",
-      "/Users/mc/Desktop/vale.club/app/api/admin/users"
+      "/Users/mc/Desktop/vale.club/app/api/admin/users",
+      "/Users/mc/Desktop/vale.club/app/api/admin/shop-services",
+      "/Users/mc/Desktop/vale.club/app/[locale]/(admin)/admin",
+      "/Users/mc/Desktop/vale.club/app/api/admin/shop-categories",
+      "/Users/mc/Desktop/vale.club/app/api/admin/shop-orders",
+      "/Users/mc/Desktop/vale.club/app/[locale]/(dashboard)/dashboard",
+      "/Users/mc/Desktop/vale.club/app/[locale]/(dashboard)/dashboard/pedidos"
     ]
   }
 }

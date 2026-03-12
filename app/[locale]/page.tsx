@@ -28,7 +28,13 @@ export default async function HomePage({ params }: HomePageProps) {
   await connectDB();
 
   const [rawCategories, rawBusinesses] = await Promise.all([
-    Category.find({ isActive: true }).sort({ order: 1 }).limit(16).lean(),
+    Category.find({
+      isActive: true,
+      $or: [{ parentCategory: null }, { parentCategory: { $exists: false } }],
+    })
+      .sort({ order: 1 })
+      .limit(16)
+      .lean(),
     Business.find({ status: "active" })
       .sort({ plan: -1, rating: -1 })
       .limit(6)

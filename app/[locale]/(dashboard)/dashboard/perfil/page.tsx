@@ -33,7 +33,11 @@ export default async function PerfilPage({ params }: PerfilPageProps) {
     Category.find({ isActive: true }).sort({ order: 1 }).lean(),
   ]);
 
-  const categories = JSON.parse(JSON.stringify(rawCategories));
+  const allCategories = JSON.parse(JSON.stringify(rawCategories));
+  const categories = {
+    parents: allCategories.filter((c: { parentCategory?: string }) => !c.parentCategory),
+    subcategories: allCategories.filter((c: { parentCategory?: string }) => !!c.parentCategory),
+  };
 
   if (!rawBusiness) {
     return (
