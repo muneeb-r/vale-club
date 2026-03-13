@@ -25,8 +25,8 @@ export default async function ShopPage({ params }: ShopPageProps) {
   const { locale } = await params;
   const t = await getTranslations("shop");
 
-  const [, rawCategories, rawServices] = await Promise.all([
-    connectDB(),
+  await connectDB();
+  const [rawCategories, rawServices] = await Promise.all([
     ShopCategory.find({ isActive: true }).sort({ order: 1 }).lean(),
     ShopService.find({ isActive: true }).populate("category").sort({ order: 1 }).lean(),
   ]);

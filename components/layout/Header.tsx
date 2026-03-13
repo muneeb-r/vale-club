@@ -35,6 +35,12 @@ export default async function Header() {
             {t("directory")}
           </Link>
           <Link
+            href="/shop"
+            className="flex items-center px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium"
+          >
+            {t("shop")}
+          </Link>
+          <Link
             href="/sobre-nosotros"
             className="flex items-center px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium"
           >
@@ -95,6 +101,12 @@ export default async function Header() {
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium"
               >
                 {t("directory")}
+              </Link>
+              <Link
+                href="/shop"
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium"
+              >
+                {t("shop")}
               </Link>
               <Link
                 href="/sobre-nosotros"

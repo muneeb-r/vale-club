@@ -23,7 +23,12 @@
       "Bash(npx tsc:*)",
       "Bash(npx shadcn@latest add popover)",
       "Bash(echo \"EXIT:$?\")",
-      "Bash(grep -n \"order.name\\\\|order.email\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(dashboard\\\\\\)/dashboard/pedidos/page.tsx)"
+      "Bash(grep -n \"order.name\\\\|order.email\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(dashboard\\\\\\)/dashboard/pedidos/page.tsx)",
+      "Bash(grep -n \"Promise.all\\\\|connectDB\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(account\\\\\\)/perfil/page.tsx)",
+      "Bash(head -10 grep -n \"Promise.all\\\\|connectDB\" /Users/mc/Desktop/vale.club/app/[locale]/page.tsx)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//Users/mc/Desktop/vale.club/**)"
     ],
     "additionalDirectories": [
       "/Users/mc/Desktop/vale.club/app/[locale]/admin",
