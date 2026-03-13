@@ -243,6 +243,8 @@
     "submitted_for_review": "Your profile has been submitted for review.",
     "plan_section": "Current plan",
     "orders": "Orders",
+    "payment_success": "Payment received! Your Pro plan is now active.",
+    "payment_failed": "Payment was not completed. Please try again.",
     "plan_free": "Free",
     "plan_pro": "Pro",
     "plan_expires": "Active until",
@@ -570,6 +572,9 @@
     "payment_proof_label_required": "Payment proof",
     "payment_proof_required": "Please upload your payment proof.",
     "submit_request": "Send request",
+    "pay_by_card": "Pay by card",
+    "card_paying": "Redirecting...",
+    "or_bank_transfer": "or pay by bank transfer",
     "submitting": "Sending...",
     "submit_error": "Error sending the request",
     "request_sent_title": "Request sent!",
@@ -738,7 +743,11 @@
     "my_orders_status_done": "Completed",
     "my_orders_status_cancelled": "Cancelled",
     "my_orders_date": "Date",
-    "my_orders_message": "Your message"
+    "my_orders_message": "Your message",
+    "pay_by_card": "Pay by card",
+    "card_paying": "Redirecting...",
+    "or_transfer": "or pay by bank transfer",
+    "order_name_email_required": "Name and email are required"
   },
   "terms": {
     "meta_title": "Terms of use — VALE",

@@ -10,6 +10,8 @@ export interface IShopOrder extends Document {
   message: string;
   status: "new" | "in_progress" | "done" | "cancelled";
   adminNote: string;
+  paymentStatus?: "unpaid" | "paid";
+  redsysOrderId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +39,8 @@ const ShopOrderSchema = new Schema<IShopOrder>(
       index: true,
     },
     adminNote: { type: String, default: "" },
+    paymentStatus: { type: String, enum: ["unpaid", "paid"] },
+    redsysOrderId: { type: String },
   },
   { timestamps: true },
 );

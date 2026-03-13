@@ -23,7 +23,12 @@
       "Bash(npx tsc:*)",
       "Bash(npx shadcn@latest add popover)",
       "Bash(echo \"EXIT:$?\")",
-      "Bash(grep -n \"order.name\\\\|order.email\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(dashboard\\\\\\)/dashboard/pedidos/page.tsx)"
+      "Bash(grep -n \"order.name\\\\|order.email\" /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(dashboard\\\\\\)/dashboard/pedidos/page.tsx)",
+      "Bash(sed -i '' 's/\"\"submit_request\"\": \"\"Enviar solicitud\"\",/\"\"submit_request\"\": \"\"Enviar solicitud\"\",\\\\n    \"\"pay_by_card\"\": \"\"Pagar con tarjeta\"\",\\\\n    \"\"card_paying\"\": \"\"Redirigiendo...\"\",\\\\n    \"\"or_bank_transfer\"\": \"\"o paga por transferencia\"\",/' /Users/mc/Desktop/vale.club/messages/es.json)",
+      "Bash(__NEW_LINE_766e409814c0dbfe__ grep:*)",
+      "Bash(sed -i '' 's/\"\"orders\"\": \"\"Pedidos\"\",/\"\"orders\"\": \"\"Pedidos\"\",\\\\n    \"\"payment_success\"\": \"\"¡Pago recibido! Tu plan Pro está activo.\"\",\\\\n    \"\"payment_failed\"\": \"\"El pago no se ha completado. Inténtalo de nuevo.\"\",/' /Users/mc/Desktop/vale.club/messages/es.json)",
+      "Bash(__NEW_LINE_26f839d7e76fedf7__ sed:*)",
+      "Bash(/Users/mc/Desktop/vale.club/.env.local.example:*)"
     ],
     "additionalDirectories": [
       "/Users/mc/Desktop/vale.club/app/[locale]/admin",

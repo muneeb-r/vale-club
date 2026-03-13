@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Drawer,
   DrawerContent,
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, CheckCircle2, X, Package } from "lucide-react";
+import { ArrowRight, CheckCircle2, X, Package, CreditCard, Loader2 } from "lucide-react";
 import { Link } from "@/lib/navigation";
 import { useTranslations } from "next-intl";
 
@@ -49,6 +49,10 @@ export default function ShopOrderDrawer({
   const [error, setError] = useState("");
 
   const isQuote = service.priceType === "quote";
+  const isFixed = service.priceType === "fixed";
+  const [cardPaying, setCardPaying] = useState(false);
+  const [redsysData, setRedsysData] = useState<{ url: string; params: Record<string, string> } | null>(null);
+  const cardFormRef = useRef<HTMLFormElement>(null);
 
   function localeName(obj: { es: string; en: string; ca: string }) {
     if (locale === "en") return obj.en || obj.es;
@@ -61,6 +65,37 @@ export default function ShopOrderDrawer({
     setError("");
     setMessage("");
     setOpen(true);
+  }
+
+  async function handleCardPay() {
+    if (!name.trim() || !email.trim()) {
+      setError(t("order_name_email_required"));
+      return;
+    }
+    setCardPaying(true);
+    setError("");
+    try {
+      const res = await fetch("/api/redsys/shop", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          serviceId: service._id,
+          name: name.trim(),
+          email: email.trim(),
+          message: message.trim(),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Error");
+      }
+      const data = await res.json();
+      setRedsysData(data);
+      setTimeout(() => cardFormRef.current?.submit(), 100);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("order_error"));
+      setCardPaying(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -93,6 +128,15 @@ export default function ShopOrderDrawer({
 
   return (
     <>
+      {/* Hidden Redsys form — auto-submits after data arrives */}
+      {redsysData && (
+        <form ref={cardFormRef} method="POST" action={redsysData.url} style={{ display: "none" }}>
+          {Object.entries(redsysData.params).map(([k, v]) => (
+            <input key={k} type="hidden" name={k} value={v} />
+          ))}
+        </form>
+      )}
+
       <button
         onClick={handleOpen}
         className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shrink-0"
@@ -205,9 +249,25 @@ export default function ShopOrderDrawer({
                   <p className="text-sm text-destructive">{error}</p>
                 )}
 
-                <Button type="submit" className="w-full rounded-full" disabled={loading}>
-                  {loading ? t("order_submitting") : isQuote ? t("order_submit_quote") : t("order_submit_buy")}
-                </Button>
+                {isFixed ? (
+                  <Button
+                    type="button"
+                    className="w-full rounded-full gap-2"
+                    disabled={cardPaying || loading}
+                    onClick={handleCardPay}
+                  >
+                    {cardPaying ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <CreditCard className="w-4 h-4" />
+                    )}
+                    {cardPaying ? t("card_paying") : t("pay_by_card")}
+                  </Button>
+                ) : (
+                  <Button type="submit" className="w-full rounded-full" disabled={loading}>
+                    {loading ? t("order_submitting") : t("order_submit_quote")}
+                  </Button>
+                )}
               </form>
             )}
           </div>

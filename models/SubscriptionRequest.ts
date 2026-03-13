@@ -8,9 +8,11 @@ export interface ISubscriptionRequest extends Document {
   planId: mongoose.Types.ObjectId;
   status: "pending" | "approved" | "rejected";
   billingCycle: "monthly" | "yearly";
-  paymentNote: string; // business owner notes (payment method, reference, etc.)
-  paymentProofUrl: string; // Firebase URL of uploaded transaction screenshot/receipt
-  adminNote: string; // admin reason for rejection
+  paymentNote: string;
+  paymentProofUrl: string;
+  adminNote: string;
+  paymentMethod?: "bank_transfer" | "card";
+  redsysOrderId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +40,8 @@ const SubscriptionRequestSchema = new Schema<ISubscriptionRequest>(
     paymentNote: { type: String, default: "" },
     paymentProofUrl: { type: String, default: "" },
     adminNote: { type: String, default: "" },
+    paymentMethod: { type: String, enum: ["bank_transfer", "card"] },
+    redsysOrderId: { type: String },
   },
   { timestamps: true },
 );

@@ -49,6 +49,7 @@ export interface IBusiness extends Document {
   plan: "free" | "paid";
   planId?: mongoose.Types.ObjectId;
   featuredUntil?: Date;
+  redsysIdentifier?: string; // COF token from Redsys — used for MIT recurring charges
   createdAt: Date;
   updatedAt: Date;
 }
@@ -101,6 +102,7 @@ const BusinessSchema = new Schema<IBusiness>(
     plan: { type: String, enum: ["free", "paid"], default: "free" },
     planId: { type: Schema.Types.ObjectId, ref: "Plan" },
     featuredUntil: { type: Date },
+    redsysIdentifier: { type: String },
   },
   { timestamps: true },
 );

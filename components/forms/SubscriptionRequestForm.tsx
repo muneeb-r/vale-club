@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import {
@@ -13,6 +13,8 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  CreditCard,
+  Loader2,
 } from "lucide-react";
 import ImageUpload from "@/components/forms/ImageUpload";
 
@@ -189,6 +191,37 @@ export default function SubscriptionRequestForm({
 
   const selectedPlan = paidPlans.find((p) => p._id === selectedPlanId);
 
+  const formRef = useRef<HTMLFormElement>(null);
+  const [redsysData, setRedsysData] = useState<{ url: string; params: Record<string, string> } | null>(null);
+  const [cardPaying, setCardPaying] = useState(false);
+
+  // Submit hidden form to Redsys once data arrives
+  useEffect(() => {
+    if (redsysData && formRef.current) {
+      formRef.current.submit();
+    }
+  }, [redsysData]);
+
+  async function handleCardPay() {
+    if (!selectedPlanId) return;
+    setCardPaying(true);
+    setError("");
+    try {
+      const res = await fetch("/api/redsys/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: selectedPlanId, billingCycle }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || t("submit_error")); return; }
+      setRedsysData(data);
+    } catch {
+      setError(t("submit_error"));
+    } finally {
+      setCardPaying(false);
+    }
+  }
+
   function handleSubmit() {
     if (!selectedPlanId) return;
     if (!paymentProofUrl) {
@@ -271,6 +304,8 @@ export default function SubscriptionRequestForm({
           paymentProofUrl={paymentProofUrl}
           setPaymentProofUrl={setPaymentProofUrl}
           isPending={isPending}
+          cardPaying={cardPaying}
+          onCardPay={handleCardPay}
           error={error}
           onSubmit={handleSubmit}
           t={t}
@@ -296,24 +331,35 @@ export default function SubscriptionRequestForm({
   }
 
   return (
-    <RequestForm
-      paidPlans={paidPlans}
-      selectedPlanId={selectedPlanId}
-      setSelectedPlanId={setSelectedPlanId}
-      billingCycle={billingCycle}
-      setBillingCycle={setBillingCycle}
-      selectedPlan={selectedPlan}
-      paymentNote={paymentNote}
-      setPaymentNote={setPaymentNote}
-      paymentProofUrl={paymentProofUrl}
-      setPaymentProofUrl={setPaymentProofUrl}
-      isPending={isPending}
-      error={error}
-      onSubmit={handleSubmit}
-      t={t}
-      locale={locale}
-      bankDetails={bankDetails}
-    />
+    <>
+      {redsysData && (
+        <form ref={formRef} method="POST" action={redsysData.url} style={{ display: "none" }}>
+          {Object.entries(redsysData.params).map(([k, v]) => (
+            <input key={k} type="hidden" name={k} value={v} />
+          ))}
+        </form>
+      )}
+      <RequestForm
+        paidPlans={paidPlans}
+        selectedPlanId={selectedPlanId}
+        setSelectedPlanId={setSelectedPlanId}
+        billingCycle={billingCycle}
+        setBillingCycle={setBillingCycle}
+        selectedPlan={selectedPlan}
+        paymentNote={paymentNote}
+        setPaymentNote={setPaymentNote}
+        paymentProofUrl={paymentProofUrl}
+        setPaymentProofUrl={setPaymentProofUrl}
+        isPending={isPending}
+        cardPaying={cardPaying}
+        onCardPay={handleCardPay}
+        error={error}
+        onSubmit={handleSubmit}
+        t={t}
+        locale={locale}
+        bankDetails={bankDetails}
+      />
+    </>
   );
 }
 
@@ -329,6 +375,8 @@ function RequestForm({
   paymentProofUrl,
   setPaymentProofUrl,
   isPending,
+  cardPaying,
+  onCardPay,
   error,
   onSubmit,
   t,
@@ -346,6 +394,8 @@ function RequestForm({
   paymentProofUrl: string;
   setPaymentProofUrl: (v: string) => void;
   isPending: boolean;
+  cardPaying: boolean;
+  onCardPay: () => void;
   error: string;
   onSubmit: () => void;
   t: (key: string, values?: Record<string, string | number>) => string;
@@ -459,6 +509,30 @@ function RequestForm({
           ))}
         </ul>
       )}
+
+      {/* Card payment — primary CTA */}
+      <div className="space-y-2">
+        <button
+          type="button"
+          onClick={onCardPay}
+          disabled={cardPaying || !selectedPlanId}
+          className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+        >
+          {cardPaying ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <CreditCard className="w-4 h-4" />
+          )}
+          {cardPaying ? t("card_paying") : t("pay_by_card")}
+        </button>
+      </div>
+
+      {/* Divider */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-xs text-muted-foreground">{t("or_bank_transfer")}</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
 
       {/* Bank details */}
       {bankDetails && <BankDetailsBox details={bankDetails} t={t} />}

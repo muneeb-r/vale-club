@@ -243,6 +243,8 @@
     "submitted_for_review": "Tu perfil ha sido enviado para revisión.",
     "plan_section": "Plan actual",
     "orders": "Pedidos",
+    "payment_success": "¡Pago recibido! Tu plan Pro está activo.",
+    "payment_failed": "El pago no se ha completado. Inténtalo de nuevo.",
     "plan_free": "Gratuito",
     "plan_pro": "Pro",
     "plan_expires": "Activo hasta",
@@ -570,6 +572,9 @@
     "payment_proof_label_required": "Comprobante de pago",
     "payment_proof_required": "Por favor sube el comprobante de pago.",
     "submit_request": "Enviar solicitud",
+    "pay_by_card": "Pagar con tarjeta",
+    "card_paying": "Redirigiendo...",
+    "or_bank_transfer": "o paga por transferencia",
     "submitting": "Enviando...",
     "submit_error": "Error al enviar la solicitud",
     "request_sent_title": "¡Solicitud enviada!",
@@ -738,7 +743,11 @@
     "my_orders_status_done": "Completado",
     "my_orders_status_cancelled": "Cancelado",
     "my_orders_date": "Fecha",
-    "my_orders_message": "Tu mensaje"
+    "my_orders_message": "Tu mensaje",
+    "pay_by_card": "Pagar con tarjeta",
+    "card_paying": "Redirigiendo...",
+    "or_transfer": "o paga por transferencia",
+    "order_name_email_required": "Nombre y email requeridos"
   },
   "terms": {
     "meta_title": "Términos de uso — VALE",

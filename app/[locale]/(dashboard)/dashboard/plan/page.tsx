@@ -6,11 +6,12 @@ import { SubscriptionRequest } from "@/models/SubscriptionRequest";
 import { Subscription } from "@/models/Subscription";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { CreditCard, Zap, History } from "lucide-react";
+import { CreditCard, Zap, History, CheckCircle2 } from "lucide-react";
 import SubscriptionRequestForm from "@/components/forms/SubscriptionRequestForm";
 
 interface PlanPageProps {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ payment?: string }>;
 }
 
 export async function generateMetadata({ params }: PlanPageProps) {
@@ -19,8 +20,9 @@ export async function generateMetadata({ params }: PlanPageProps) {
   return { title: t("plan_section") };
 }
 
-export default async function PlanPage({ params }: PlanPageProps) {
+export default async function PlanPage({ params, searchParams }: PlanPageProps) {
   const { locale } = await params;
+  const { payment } = await searchParams;
   const user = await getServerUser();
   if (!user) redirect("/login");
 
@@ -149,6 +151,19 @@ export default async function PlanPage({ params }: PlanPageProps) {
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">{business.name}</p>
       </div>
+
+      {payment === "ok" && (
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
+          <p className="text-sm text-green-800 font-medium">{t("payment_success")}</p>
+        </div>
+      )}
+      {payment === "failed" && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center gap-3">
+          <CreditCard className="w-5 h-5 text-red-500 shrink-0" />
+          <p className="text-sm text-red-700 font-medium">{t("payment_failed")}</p>
+        </div>
+      )}
 
       {/* Current plan status */}
       <div
