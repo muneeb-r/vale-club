@@ -367,6 +367,7 @@
     "renew": "Renovar",
     "plan_expires_on": "Expira el",
     "plans": "Planes",
+    "orders": "Pedidos",
     "users": "Usuarios",
     "user_search_placeholder": "Buscar por nombre o email...",
     "all_roles": "Todos los roles",
@@ -749,6 +750,7 @@
     "card_paying": "Redirigiendo...",
     "or_transfer": "o paga por transferencia",
     "order_name_email_required": "Nombre y email requeridos",
+    "payment_paid": "Pagado con tarjeta",
     "payment_success_title": "¡Pago realizado con éxito!",
     "payment_success_desc": "Tu pedido ha sido registrado y el equipo de VALE se pondrá en contacto contigo en breve.",
     "payment_failed": "El pago no se ha podido procesar. Inténtalo de nuevo."

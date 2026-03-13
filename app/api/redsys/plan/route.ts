@@ -30,7 +30,9 @@ export async function POST(req: NextRequest) {
   if (!business) return NextResponse.json({ error: "Negocio no encontrado" }, { status: 404 });
   if (!plan) return NextResponse.json({ error: "Plan no encontrado" }, { status: 404 });
 
-  const priceEur = billingCycle === "yearly" ? plan.priceYearly : plan.priceMonthly;
+  const priceEur = billingCycle === "yearly"
+    ? (plan.priceYearly || 0)
+    : (plan.priceMonthly || plan.price || 0);
   if (!priceEur || priceEur <= 0) {
     return NextResponse.json({ error: "Precio no válido" }, { status: 400 });
   }

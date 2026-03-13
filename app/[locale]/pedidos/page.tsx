@@ -4,7 +4,7 @@ import { ShopOrder } from "@/models/ShopOrder";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/navigation";
-import { Package, ArrowLeft, Clock, CheckCircle2, XCircle, Loader2, AlertCircle } from "lucide-react";
+import { Package, ArrowLeft, Clock, CheckCircle2, XCircle, Loader2, AlertCircle, CreditCard } from "lucide-react";
 
 const STATUS_CONFIG = {
   new:         { color: "bg-blue-50 text-blue-700 border-blue-200",   Icon: Clock },
@@ -21,6 +21,7 @@ interface PopulatedOrder {
   type: "purchase" | "quote";
   message: string;
   status: OrderStatus;
+  paymentStatus?: "unpaid" | "paid";
   adminNote: string;
   createdAt: string;
 }
@@ -104,10 +105,18 @@ export default async function PedidosPage({ searchParams }: PedidosPageProps) {
                         {price ? ` · ${price} €` : ""}
                       </p>
                     </div>
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs border font-medium shrink-0 ${cfg.color}`}>
-                      <Icon className="w-3 h-3" />
-                      {t(`my_orders_status_${order.status}` as Parameters<typeof t>[0])}
-                    </span>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      {order.paymentStatus === "paid" && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border font-medium bg-emerald-50 text-emerald-700 border-emerald-200">
+                          <CreditCard className="w-3 h-3" />
+                          {t("payment_paid")}
+                        </span>
+                      )}
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs border font-medium ${cfg.color}`}>
+                        <Icon className="w-3 h-3" />
+                        {t(`my_orders_status_${order.status}` as Parameters<typeof t>[0])}
+                      </span>
+                    </div>
                   </div>
 
                   {order.message && (

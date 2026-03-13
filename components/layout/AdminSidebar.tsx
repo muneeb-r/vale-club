@@ -3,7 +3,7 @@
 import { Link, usePathname } from "@/lib/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { Building2, Tag, LayoutDashboard, ShieldCheck, CreditCard, Users, BadgeCheck, ShoppingBag } from "lucide-react";
+import { Building2, Tag, LayoutDashboard, ShieldCheck, CreditCard, Users, BadgeCheck, ShoppingBag, Package } from "lucide-react";
 
 export default function AdminSidebar() {
   const pathname = usePathname();
@@ -17,6 +17,7 @@ export default function AdminSidebar() {
     { href: "/admin/planes" as const, label: t("plans"), icon: CreditCard, exact: false },
     { href: "/admin/suscripciones" as const, label: t("subscriptions"), icon: BadgeCheck, exact: false },
     { href: "/admin/usuarios" as const, label: t("users"), icon: Users, exact: false },
+    { href: "/admin/pedidos" as const, label: t("orders"), icon: Package, exact: false },
     { href: "/admin/shop" as const, label: "Vale Shop", icon: ShoppingBag, exact: false },
   ];
 

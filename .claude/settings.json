@@ -29,7 +29,8 @@
       "Bash(for f:*)",
       "Bash(do echo:*)",
       "Read(//Users/mc/Desktop/vale.club/**)",
-      "Bash(mongosh mongodb://localhost:27017/vale --eval \"db.getCollectionNames\\(\\)\" --quiet)"
+      "Bash(mongosh mongodb://localhost:27017/vale --eval \"db.getCollectionNames\\(\\)\" --quiet)",
+      "Bash(find /Users/mc/Desktop/vale.club/app/[locale]/\\\\\\(admin\\\\\\) -name \"*.tsx\")"
     ],
     "additionalDirectories": [
       "/Users/mc/Desktop/vale.club/app/[locale]/admin",
