@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   if (!resetLimiter(getClientIp(req))) {
     return NextResponse.json(
       { error: "Demasiadas solicitudes. Espera unos minutos." },
-      { status: 429 }
+      { status: 429 },
     );
   }
   try {
@@ -36,7 +36,10 @@ export async function POST(req: NextRequest) {
 
     // Generate a secure random token
     const rawToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
 
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
@@ -46,7 +49,7 @@ export async function POST(req: NextRequest) {
       expiresAt,
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = process.env.BASE_URL || "http://localhost:3000";
     const resetUrl = `${appUrl}/${locale}/reset-password?token=${rawToken}`;
 
     await sendPasswordResetEmail({ to: user.email, resetUrl, locale });
@@ -56,7 +59,7 @@ export async function POST(req: NextRequest) {
     console.error("Forgot password error:", error);
     return NextResponse.json(
       { error: "Error al procesar la solicitud" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

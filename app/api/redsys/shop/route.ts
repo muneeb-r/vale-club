@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const priceEur = service.promoPrice ?? service.price;
   const orderId = randomTransactionId();
   const amountCents = Math.round(priceEur * 100);
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
+  const BASE_URL = process.env.BASE_URL!;
 
   await PendingRedsysPayment.create({
     orderId,

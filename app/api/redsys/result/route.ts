@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const orderId = searchParams.get("orderId");
   const result = searchParams.get("result");
 
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL!;
+  const BASE_URL = process.env.BASE_URL!;
 
   if (!orderId) {
     return NextResponse.redirect(`${BASE_URL}/shop?payment=failed`);

@@ -28,7 +28,8 @@
       "Bash(head -10 grep -n \"Promise.all\\\\|connectDB\" /Users/mc/Desktop/vale.club/app/[locale]/page.tsx)",
       "Bash(for f:*)",
       "Bash(do echo:*)",
-      "Read(//Users/mc/Desktop/vale.club/**)"
+      "Read(//Users/mc/Desktop/vale.club/**)",
+      "Bash(mongosh mongodb://localhost:27017/vale --eval \"db.getCollectionNames\\(\\)\" --quiet)"
     ],
     "additionalDirectories": [
       "/Users/mc/Desktop/vale.club/app/[locale]/admin",
