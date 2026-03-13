@@ -748,7 +748,10 @@
     "pay_by_card": "Pay by card",
     "card_paying": "Redirecting...",
     "or_transfer": "or pay by bank transfer",
-    "order_name_email_required": "Name and email are required"
+    "order_name_email_required": "Name and email are required",
+    "payment_success_title": "Payment successful!",
+    "payment_success_desc": "Your order has been registered. The VALE team will contact you shortly.",
+    "payment_failed": "The payment could not be processed. Please try again."
   },
   "terms": {
     "meta_title": "Terms of use — VALE",

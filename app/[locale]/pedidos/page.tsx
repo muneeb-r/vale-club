@@ -4,7 +4,7 @@ import { ShopOrder } from "@/models/ShopOrder";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/navigation";
-import { Package, ArrowLeft, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Package, ArrowLeft, Clock, CheckCircle2, XCircle, Loader2, AlertCircle } from "lucide-react";
 
 const STATUS_CONFIG = {
   new:         { color: "bg-blue-50 text-blue-700 border-blue-200",   Icon: Clock },
@@ -25,9 +25,15 @@ interface PopulatedOrder {
   createdAt: string;
 }
 
-export default async function PedidosPage() {
+interface PedidosPageProps {
+  searchParams: Promise<{ payment?: string }>;
+}
+
+export default async function PedidosPage({ searchParams }: PedidosPageProps) {
   const user = await getServerUser();
-  if (!user) redirect("/login");
+  if (!user) redirect(`/login?next=${encodeURIComponent("/pedidos?payment=ok")}`);
+
+  const { payment } = await searchParams;
 
   const t = await getTranslations("shop");
 
@@ -57,6 +63,23 @@ export default async function PedidosPage() {
           </h1>
           <p className="text-sm text-muted-foreground">{user.email}</p>
         </div>
+
+        {payment === "ok" && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
+            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-green-600" />
+            <div>
+              <p className="font-semibold">{t("payment_success_title")}</p>
+              <p className="text-green-700 mt-0.5">{t("payment_success_desc")}</p>
+            </div>
+          </div>
+        )}
+
+        {payment === "failed" && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-600" />
+            <p>{t("payment_failed")}</p>
+          </div>
+        )}
 
         {orders.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">

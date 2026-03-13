@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   const BASE_URL = process.env.BASE_URL!;
 
   if (!orderId) {
-    return NextResponse.redirect(`${BASE_URL}/shop?payment=failed`);
+    return NextResponse.redirect(`${BASE_URL}/login?next=${encodeURIComponent("/pedidos?payment=ok")}`);
   }
 
   await connectDB();
@@ -25,5 +25,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${BASE_URL}/dashboard/plan?payment=ok`);
   }
 
-  return NextResponse.redirect(`${BASE_URL}/shop?payment=ok`);
+  // Shop payment: redirect to orders page (requires login)
+  return NextResponse.redirect(`${BASE_URL}/login?next=${encodeURIComponent("/pedidos?payment=ok")}`);
 }
