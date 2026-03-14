@@ -3,7 +3,7 @@
 import { usePathname } from "@/lib/navigation";
 import { Link } from "@/lib/navigation";
 import { useTranslations } from "next-intl";
-import { Home, Search, LayoutDashboard, UserCircle2, LogIn } from "lucide-react";
+import { Home, Search, ShoppingBag, LayoutDashboard, UserCircle2, LogIn } from "lucide-react";
 
 interface BottomNavProps {
   role: "admin" | "business_owner" | "user" | null;
@@ -30,6 +30,7 @@ export default function BottomNav({ role }: BottomNavProps) {
   const items = [
     { href: "/", label: t("home"), Icon: Home },
     { href: "/search", label: t("directory"), Icon: Search },
+    { href: "/shop", label: t("shop"), Icon: ShoppingBag },
     ...(role
       ? [{ href: profileHref, label: profileLabel, Icon: ProfileIcon }]
       : [{ href: "/login", label: t("login"), Icon: LogIn }]),
