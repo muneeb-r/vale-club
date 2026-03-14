@@ -33,7 +33,7 @@ export default function HeroSearch() {
         </div>
         <button
           type="submit"
-          className="bg-vale-orange hover:bg-vale-orange/90 text-white px-4 sm:px-5 py-2.5 rounded-full text-sm font-medium transition-colors shrink-0"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 sm:px-5 py-2.5 rounded-full text-sm font-medium transition-colors shrink-0"
         >
           {t("search_button")}
         </button>

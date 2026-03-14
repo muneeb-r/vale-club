@@ -65,7 +65,7 @@
   --card-foreground: oklch(0.08 0.01 198);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.08 0.01 198);
-  --primary: #5cac9c; /* #114F51 teal */
+  --primary: #114f51; /* VALE teal */
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.66 0.07 185); /* #59AB9F accent teal */
   --secondary-foreground: oklch(0.08 0.01 198);

@@ -83,7 +83,7 @@ export default async function Header() {
               </Link>
               <Link
                 href="/register"
-                className="ml-1 bg-vale-orange text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-vale-orange/90 active:scale-95 transition-all"
+                className="ml-1 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 active:scale-95 transition-all"
               >
                 {t("register")}
               </Link>
