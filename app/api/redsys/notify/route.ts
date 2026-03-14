@@ -25,7 +25,10 @@ export async function POST(req: NextRequest) {
     const success = isResponseCodeOk(responseCode);
     // COF token — Redsys returns this when DS_MERCHANT_IDENTIFIER="REQUIRED" was sent
     // The type definition doesn't include it for notifications but it's present at runtime
-    const cofIdentifier = (notification as unknown as Record<string, string | undefined>).Ds_Merchant_Identifier ?? null;
+    const notifExtra = notification as unknown as Record<string, string | undefined>;
+    const cofIdentifier = notifExtra.Ds_Merchant_Identifier ?? null;
+    // Ds_AuthorisationCode is the txn ID required as DS_MERCHANT_COF_TXNID in future MIT charges
+    const cofTxnId = notification.Ds_AuthorisationCode ?? notifExtra.Ds_AuthorisationCode ?? null;
 
     await connectDB();
 
@@ -93,7 +96,7 @@ export async function POST(req: NextRequest) {
         requestId: subRequest._id,
       });
 
-      // Activate business plan + store COF token if returned, clear any failure flags
+      // Activate business plan + store COF token/txnId if returned, clear any failure flags
       await Business.findByIdAndUpdate(pending.businessId, {
         plan: "paid",
         planId: pending.planId,
@@ -101,6 +104,7 @@ export async function POST(req: NextRequest) {
         mitFailedAt: null,
         cancelAutoRenew: false,
         ...(cofIdentifier ? { redsysIdentifier: cofIdentifier } : {}),
+        ...(cofTxnId ? { redsysCofTxnId: cofTxnId } : {}),
       });
     } else if (pending.type === "shop") {
       await ShopOrder.create({

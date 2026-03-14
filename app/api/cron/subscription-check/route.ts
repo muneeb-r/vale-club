@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     endDate: { $gte: now, $lte: in3Days },
   }).populate({
     path: "businessId",
-    select: "name ownerId redsysIdentifier cancelAutoRenew featuredUntil planId",
+    select: "name ownerId redsysIdentifier redsysCofTxnId cancelAutoRenew featuredUntil planId",
     populate: { path: "ownerId", select: "email name" },
   });
 
@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
           _id: string;
           name: string;
           redsysIdentifier?: string;
+          redsysCofTxnId?: string;
           cancelAutoRenew?: boolean;
           featuredUntil?: Date;
           planId?: string;
@@ -94,6 +95,7 @@ export async function GET(req: NextRequest) {
           DS_MERCHANT_IDENTIFIER: business.redsysIdentifier,
           DS_MERCHANT_COF_INI: "N",
           DS_MERCHANT_COF_TYPE: "R",
+          DS_MERCHANT_COF_TXNID: business.redsysCofTxnId ?? "",
           DS_MERCHANT_DIRECTPAYMENT: "true",
         });
 

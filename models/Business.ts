@@ -50,6 +50,7 @@ export interface IBusiness extends Document {
   planId?: mongoose.Types.ObjectId;
   featuredUntil?: Date;
   redsysIdentifier?: string; // COF token from Redsys — used for MIT recurring charges
+  redsysCofTxnId?: string;  // Ds_AuthorisationCode from the original CIT — required for MIT DS_MERCHANT_COF_TXNID
   cancelAutoRenew?: boolean; // user opted out of automatic MIT renewal
   mitFailedAt?: Date; // set when last MIT auto-renewal attempt failed
   createdAt: Date;
@@ -105,6 +106,7 @@ const BusinessSchema = new Schema<IBusiness>(
     planId: { type: Schema.Types.ObjectId, ref: "Plan" },
     featuredUntil: { type: Date },
     redsysIdentifier: { type: String },
+    redsysCofTxnId: { type: String },
     cancelAutoRenew: { type: Boolean, default: false },
     mitFailedAt: { type: Date },
   },
