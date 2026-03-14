@@ -6,8 +6,9 @@ import { SubscriptionRequest } from "@/models/SubscriptionRequest";
 import { Subscription } from "@/models/Subscription";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { CreditCard, Zap, History, CheckCircle2 } from "lucide-react";
+import { CreditCard, Zap, History, CheckCircle2, AlertTriangle } from "lucide-react";
 import SubscriptionRequestForm from "@/components/forms/SubscriptionRequestForm";
+import PlanAutoRenewActions from "@/components/dashboard/PlanAutoRenewActions";
 
 interface PlanPageProps {
   params: Promise<{ locale: string }>;
@@ -31,7 +32,7 @@ export default async function PlanPage({ params, searchParams }: PlanPageProps) 
   await connectDB();
 
   const rawBusiness = await Business.findOne({ ownerId: user.userId })
-    .select("name plan planId featuredUntil status")
+    .select("name plan planId featuredUntil status cancelAutoRenew mitFailedAt redsysIdentifier")
     .lean();
 
   if (!rawBusiness) redirect("/dashboard");
@@ -55,6 +56,9 @@ export default async function PlanPage({ params, searchParams }: PlanPageProps) 
     plan: "free" | "paid";
     featuredUntil?: string;
     status: string;
+    cancelAutoRenew?: boolean;
+    mitFailedAt?: string;
+    redsysIdentifier?: string;
   };
 
   const plans = JSON.parse(JSON.stringify(rawPlans)) as {
@@ -106,6 +110,8 @@ export default async function PlanPage({ params, searchParams }: PlanPageProps) 
     : null;
 
   const paidPlans = plans.filter((p) => (p.priceMonthly ?? p.price) > 0);
+  const hasCardToken = !!business.redsysIdentifier;
+  const mitFailed = !!business.mitFailedAt;
 
   function planDisplayName(name: { es: string; en: string } | string): string {
     if (typeof name === "string") return name;
@@ -266,8 +272,24 @@ export default async function PlanPage({ params, searchParams }: PlanPageProps) 
         ))}
       </div>
 
+      {/* MIT failed — card needs updating */}
+      {isPro && mitFailed && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-red-800">{t("plan_renewal_failed_title")}</p>
+            <p className="text-xs text-red-700 mt-0.5">{t("plan_renewal_failed_desc")}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Auto-renewal toggle — only for Pro users with a stored card token */}
+      {isPro && !isPlanExpired && hasCardToken && (
+        <PlanAutoRenewActions cancelAutoRenew={!!business.cancelAutoRenew} />
+      )}
+
       {/* Subscription request form — only for active businesses */}
-      {(!isPro || isPlanExpired) && (
+      {(!isPro || isPlanExpired || mitFailed) && (
         business.status === "active" ? (
           <SubscriptionRequestForm plans={plans} pendingRequest={pendingRequest} locale={locale} />
         ) : (

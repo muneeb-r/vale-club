@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     endDate: { $gte: now, $lte: in3Days },
   }).populate({
     path: "businessId",
-    select: "name ownerId redsysIdentifier featuredUntil planId",
+    select: "name ownerId redsysIdentifier cancelAutoRenew featuredUntil planId",
     populate: { path: "ownerId", select: "email name" },
   });
 
@@ -54,12 +54,14 @@ export async function GET(req: NextRequest) {
           _id: string;
           name: string;
           redsysIdentifier?: string;
+          cancelAutoRenew?: boolean;
           featuredUntil?: Date;
           planId?: string;
           ownerId: { email: string; name: string };
         };
 
         if (!business?.redsysIdentifier) return; // no token — will fall through to warning email
+        if (business.cancelAutoRenew) return; // user opted out of auto-renewal
 
         const plan = await Plan.findById(sub.planId).lean();
         if (!plan) return;
@@ -97,8 +99,9 @@ export async function GET(req: NextRequest) {
 
         const responseCode = response.Ds_Response ?? "";
         if (!isResponseCodeOk(responseCode)) {
-          // MIT failed — mark pending as failed, fall through to warning email
+          // MIT failed — mark pending as failed, record failure on business so UI shows update-card CTA
           await PendingRedsysPayment.updateOne({ orderId }, { status: "failed" });
+          await Business.findByIdAndUpdate(business._id, { mitFailedAt: now });
           results.errors.push(`MIT failed for sub ${sub._id}: code ${responseCode}`);
           return;
         }
@@ -146,6 +149,8 @@ export async function GET(req: NextRequest) {
           plan: "paid",
           planId: plan._id,
           featuredUntil: endDate,
+          mitFailedAt: null,
+          cancelAutoRenew: false,
         });
 
         results.autoRenewed++;

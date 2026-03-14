@@ -93,11 +93,13 @@ export async function POST(req: NextRequest) {
         requestId: subRequest._id,
       });
 
-      // Activate business plan + store COF token if returned
+      // Activate business plan + store COF token if returned, clear any failure flags
       await Business.findByIdAndUpdate(pending.businessId, {
         plan: "paid",
         planId: pending.planId,
         featuredUntil: endDate,
+        mitFailedAt: null,
+        cancelAutoRenew: false,
         ...(cofIdentifier ? { redsysIdentifier: cofIdentifier } : {}),
       });
     } else if (pending.type === "shop") {
