@@ -97,9 +97,7 @@ export default async function ShopPage({ params }: ShopPageProps) {
                   </div>
 
                   <div className="pt-2 border-t border-border flex items-end justify-between gap-2">
-                    {service.priceType === "quote" ? (
-                      <span className="text-sm font-medium text-primary">{t("price_quote")}</span>
-                    ) : (
+                    {service.priceType !== "quote" && (
                       <div>
                         {service.promoPrice && service.promoPrice !== service.price ? (
                           <div className="flex items-baseline gap-2">
