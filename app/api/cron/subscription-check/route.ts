@@ -43,7 +43,8 @@ export async function GET(req: NextRequest) {
     endDate: { $gte: now, $lte: in3Days },
   }).populate({
     path: "businessId",
-    select: "name ownerId redsysIdentifier redsysCofTxnId cancelAutoRenew featuredUntil planId",
+    select:
+      "name ownerId redsysIdentifier redsysCofTxnId cancelAutoRenew featuredUntil planId",
     populate: { path: "ownerId", select: "email name" },
   });
 
@@ -62,13 +63,15 @@ export async function GET(req: NextRequest) {
         };
 
         if (!business?.redsysIdentifier) return; // no token — will fall through to warning email
+        if (!business?.redsysCofTxnId) return; // no original txn ID — COF registration incomplete
         if (business.cancelAutoRenew) return; // user opted out of auto-renewal
 
         const plan = await Plan.findById(sub.planId).lean();
         if (!plan) return;
 
         const billingCycle = sub.billingCycle;
-        const priceEur = billingCycle === "yearly" ? plan.priceYearly : plan.priceMonthly;
+        const priceEur =
+          billingCycle === "yearly" ? plan.priceYearly : plan.priceMonthly;
         if (!priceEur || priceEur <= 0) return;
 
         const orderId = randomTransactionId();
@@ -96,20 +99,43 @@ export async function GET(req: NextRequest) {
           DS_MERCHANT_COF_INI: "N",
           DS_MERCHANT_COF_TYPE: "R",
           DS_MERCHANT_COF_TXNID: business.redsysCofTxnId ?? "",
-          DS_MERCHANT_DIRECTPAYMENT: "true",
+          // SCA exemption for MIT recurring — no DIRECTPAYMENT to avoid SIS0463
+          DS_MERCHANT_EXCEP_SCA: "MIT",
         });
 
         const responseCode = response.Ds_Response ?? "";
         if (!isResponseCodeOk(responseCode)) {
           // MIT failed — mark pending as failed, record failure on business so UI shows update-card CTA
-          await PendingRedsysPayment.updateOne({ orderId }, { status: "failed" });
+          await PendingRedsysPayment.updateOne(
+            { orderId },
+            { status: "failed" },
+          );
           await Business.findByIdAndUpdate(business._id, { mitFailedAt: now });
-          results.errors.push(`MIT failed for sub ${sub._id}: code ${responseCode}`);
+          results.errors.push(
+            `MIT failed for sub ${sub._id}: code ${responseCode} ${JSON.stringify(
+              {
+                DS_MERCHANT_MERCHANTCODE: process.env.REDSYS_MERCHANT_CODE!,
+                DS_MERCHANT_TERMINAL: process.env.REDSYS_TERMINAL!,
+                DS_MERCHANT_ORDER: orderId,
+                DS_MERCHANT_AMOUNT: String(amountCents),
+                DS_MERCHANT_CURRENCY: "978",
+                DS_MERCHANT_TRANSACTIONTYPE: "0",
+                DS_MERCHANT_IDENTIFIER: business.redsysIdentifier,
+                DS_MERCHANT_COF_INI: "N",
+                DS_MERCHANT_COF_TYPE: "R",
+                DS_MERCHANT_COF_TXNID: business.redsysCofTxnId ?? "",
+                // SCA exemption for MIT recurring — no DIRECTPAYMENT to avoid SIS0463
+                DS_MERCHANT_EXCEP_SCA: "MIT",
+              },
+            )}`,
+          );
           return;
         }
 
         // MIT succeeded — activate renewal (same logic as notify route)
-        const currentEnd = business.featuredUntil ? new Date(business.featuredUntil) : now;
+        const currentEnd = business.featuredUntil
+          ? new Date(business.featuredUntil)
+          : now;
         const startDate = currentEnd > now ? currentEnd : now;
         const endDate = new Date(startDate);
         if (billingCycle === "yearly") {
@@ -159,7 +185,7 @@ export async function GET(req: NextRequest) {
       } catch (err) {
         results.errors.push(`MIT renewal failed for sub ${sub._id}: ${err}`);
       }
-    })
+    }),
   );
 
   // ── 2. Send 7-day renewal warning (for businesses without COF token) ──────
@@ -207,7 +233,7 @@ export async function GET(req: NextRequest) {
       } catch (err) {
         results.errors.push(`Warning email failed for sub ${sub._id}: ${err}`);
       }
-    })
+    }),
   );
 
   // ── 3. Expire overdue subscriptions ──────────────────────────────────────
@@ -254,7 +280,7 @@ export async function GET(req: NextRequest) {
       } catch (err) {
         results.errors.push(`Expiry failed for sub ${sub._id}: ${err}`);
       }
-    })
+    }),
   );
 
   return NextResponse.json({

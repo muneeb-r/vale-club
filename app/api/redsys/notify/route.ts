@@ -26,6 +26,9 @@ export async function POST(req: NextRequest) {
     // COF token — Redsys returns this when DS_MERCHANT_IDENTIFIER="REQUIRED" was sent
     // The type definition doesn't include it for notifications but it's present at runtime
     const notifExtra = notification as unknown as Record<string, string | undefined>;
+    console.log("[redsys/notify] full notification keys:", Object.keys(notifExtra));
+    console.log("[redsys/notify] Ds_Merchant_Identifier:", notifExtra.Ds_Merchant_Identifier);
+    console.log("[redsys/notify] Ds_AuthorisationCode:", notification.Ds_AuthorisationCode);
     const cofIdentifier = notifExtra.Ds_Merchant_Identifier ?? null;
     // Ds_AuthorisationCode is the txn ID required as DS_MERCHANT_COF_TXNID in future MIT charges
     const cofTxnId = notification.Ds_AuthorisationCode ?? notifExtra.Ds_AuthorisationCode ?? null;

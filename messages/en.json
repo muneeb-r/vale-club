@@ -602,6 +602,7 @@
     "bank_holder": "Account holder",
     "bank_account": "Account number",
     "bank_reference": "Reference",
+    "billing_cycle": "Billing cycle",
     "billing_monthly": "Monthly",
     "billing_yearly": "Yearly",
     "billing_yearly_savings": "Save {amount} €/year",

@@ -602,6 +602,7 @@
     "bank_holder": "Titular",
     "bank_account": "Número de cuenta",
     "bank_reference": "Referencia",
+    "billing_cycle": "Ciclo de facturación",
     "billing_monthly": "Mensual",
     "billing_yearly": "Anual",
     "billing_yearly_savings": "Ahorras {amount} €/año",
