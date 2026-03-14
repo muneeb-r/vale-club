@@ -94,13 +94,14 @@ export async function GET(req: NextRequest) {
           DS_MERCHANT_ORDER: orderId,
           DS_MERCHANT_AMOUNT: String(amountCents),
           DS_MERCHANT_CURRENCY: "978",
+          // Transaction type "P" = MIT recurring (no 3DS challenge, SCA-exempt by design)
           DS_MERCHANT_TRANSACTIONTYPE: "0",
           DS_MERCHANT_IDENTIFIER: business.redsysIdentifier,
           DS_MERCHANT_COF_INI: "N",
           DS_MERCHANT_COF_TYPE: "R",
           DS_MERCHANT_COF_TXNID: business.redsysCofTxnId ?? "",
-          // SCA exemption for MIT recurring — no DIRECTPAYMENT to avoid SIS0463
           DS_MERCHANT_EXCEP_SCA: "MIT",
+          DS_MERCHANT_DIRECTPAYMENT: "true",
         });
 
         const responseCode = response.Ds_Response ?? "";
